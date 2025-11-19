@@ -34,6 +34,7 @@ interface DesktopState {
   desktops: Desktop[];
   currentDesktopId: string;
   nextDesktopId: number;
+  appsState: Record<string, any>;
 }
 interface DesktopActions {
   openApp: (appId: string) => void;
@@ -49,6 +50,7 @@ interface DesktopActions {
   addDesktop: () => void;
   removeDesktop: (desktopId: string) => void;
   setCurrentDesktop: (desktopId: string) => void;
+  updateAppState: (appId: string, data: any) => void;
 }
 const initialState: DesktopState = {
   windows: [],
@@ -59,6 +61,7 @@ const initialState: DesktopState = {
   desktops: [{ id: '1', name: 'os.desktop.1' }],
   currentDesktopId: '1',
   nextDesktopId: 2,
+  appsState: {},
 };
 export const useDesktopStore = create<DesktopState & DesktopActions>()(
   immer((set, get) => ({
@@ -196,6 +199,11 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
     },
     setCurrentDesktop: (desktopId) => {
       set({ currentDesktopId: desktopId, activeWindowId: null });
+    },
+    updateAppState: (appId, data) => {
+      set((state) => {
+        state.appsState[appId] = { ...state.appsState[appId], ...data };
+      });
     },
   }))
 );
