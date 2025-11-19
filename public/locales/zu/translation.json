@@ -9,7 +9,9 @@
       "dailyRoutes": "Imizila Yansuku zonke",
       "optimizeRoutes": "Lungiselela Imizila",
       "liveTracking": "Ukulandelela Izimoto Bukhoma",
-      "trackingActive": "Ukulandelela izimoto kuyasebenza. {online}/{total} izimoto ziku-inthanethi."
+      "trackingActive": "Ukulandelela izimoto kuyasebenza. {online}/{total} izimoto ziku-inthanethi.",
+      "aiSuggestion": "Isiphakamiso se-AI",
+      "aiSuggestionComplete": "I-AI ikhiqize umzila olungiselelwe."
     },
     "compliance": {
       "title": "Ukuthobela",
@@ -17,7 +19,10 @@
       "checklist": "Uhlu Lokuhlola Ukuthobela",
       "generateReport": "Khiqiza Umbiko",
       "generateReportDesc": "Khiqiza umbiko wokuthobela olungele ukuhlolwa ngokuchofoza okukodwa.",
-      "generatePdf": "Khiqiza Umbiko we-PDF"
+      "generatePdf": "Khiqiza Umbiko we-PDF",
+      "runAiAudit": "Qalisa Ukuhlolwa kwe-AI",
+      "aiAuditCompleteTitle": "Ukuhlolwa kwe-AI Kuphothuliwe",
+      "aiAuditCompleteMessage": "{count} izinkinga zokuthobela zitholakele futhi zaxazululwa ngokuzenzakalelayo."
     },
     "payments": {
       "title": "Izinkokhelo",

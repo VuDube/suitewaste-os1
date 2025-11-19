@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { FileText, ShieldCheck } from 'lucide-react';
+import { FileText, ShieldCheck, Bot, Loader2 } from 'lucide-react';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { useTranslation } from 'react-i18next';
 const APP_ID = 'compliance';
@@ -16,7 +16,7 @@ const initialComplianceItems = [
 ];
 const ComplianceApp: React.FC = () => {
   const { t } = useTranslation();
-  // Corrected Zustand selection: Use individual selectors for primitives and stable references.
+  const [isAuditing, setIsAuditing] = useState(false);
   const appState = useDesktopStore((state) => state.appsState[APP_ID]);
   const updateAppState = useDesktopStore((state) => state.updateAppState);
   const addNotification = useDesktopStore((state) => state.addNotification);
@@ -40,6 +40,31 @@ const ComplianceApp: React.FC = () => {
       message: 'Your compliance report is being generated and will be available shortly.',
     });
   };
+  const handleAiAudit = () => {
+    setIsAuditing(true);
+    setTimeout(() => {
+      if (!appState?.items) {
+        setIsAuditing(false);
+        return;
+      }
+      let issuesResolved = 0;
+      const auditedItems = appState.items.map((item: any) => {
+        if (!item.checked) {
+          issuesResolved++;
+          return { ...item, checked: true };
+        }
+        return item;
+      });
+      updateAppState(APP_ID, { items: auditedItems });
+      addNotification({
+        appId: APP_ID,
+        icon: ShieldCheck,
+        title: t('apps.compliance.aiAuditCompleteTitle'),
+        message: t('apps.compliance.aiAuditCompleteMessage', { count: issuesResolved }),
+      });
+      setIsAuditing(false);
+    }, 2000);
+  };
   const complianceItems = appState?.items || [];
   return (
     <ScrollArea className="h-full">
@@ -50,8 +75,16 @@ const ComplianceApp: React.FC = () => {
         </header>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t('apps.compliance.checklist')}</CardTitle>
+              <Button variant="outline" size="sm" onClick={handleAiAudit} disabled={isAuditing}>
+                {isAuditing ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Bot className="mr-2 h-4 w-4" />
+                )}
+                {t('apps.compliance.runAiAudit')}
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               {complianceItems.map((item: any) => (
