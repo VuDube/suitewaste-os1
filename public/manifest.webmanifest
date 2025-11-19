@@ -1,0 +1,26 @@
+{
+  "name": "SuiteWaste OS",
+  "short_name": "SuiteWaste",
+  "description": "SuiteWaste OS — Desktop-style PWA for South African waste management stakeholders (municipalities, buyback centers, recyclers, and informal workers).",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#2E7D32",
+  "icons": [
+    {
+      "src": "/mask-icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/vite.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
