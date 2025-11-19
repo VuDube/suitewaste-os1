@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { FileText, ShieldCheck } from 'lucide-react';
 import { useDesktopStore } from '@/stores/useDesktopStore';
-import { useShallow } from 'zustand/react/shallow';
 import { useTranslation } from 'react-i18next';
 const APP_ID = 'compliance';
 const initialComplianceItems = [
@@ -17,19 +16,17 @@ const initialComplianceItems = [
 ];
 const ComplianceApp: React.FC = () => {
   const { t } = useTranslation();
-  const { appState, updateAppState, addNotification } = useDesktopStore(
-    useShallow((state) => ({
-      appState: state.appsState[APP_ID],
-      updateAppState: state.updateAppState,
-      addNotification: state.addNotification,
-    }))
-  );
+  // Corrected Zustand selection: Use individual selectors for primitives and stable references.
+  const appState = useDesktopStore((state) => state.appsState[APP_ID]);
+  const updateAppState = useDesktopStore((state) => state.updateAppState);
+  const addNotification = useDesktopStore((state) => state.addNotification);
   useEffect(() => {
     if (!appState) {
       updateAppState(APP_ID, { items: initialComplianceItems });
     }
   }, [appState, updateAppState]);
   const handleCheckChange = (itemId: string, checked: boolean) => {
+    if (!appState?.items) return;
     const updatedItems = appState.items.map((item: any) =>
       item.id === itemId ? { ...item, checked } : item
     );
