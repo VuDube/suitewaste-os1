@@ -9,7 +9,9 @@
       "dailyRoutes": "Daily Routes",
       "optimizeRoutes": "Optimize Routes",
       "liveTracking": "Live Vehicle Tracking",
-      "trackingActive": "Vehicle tracking is active. {online}/{total} vehicles online."
+      "trackingActive": "Vehicle tracking is active. {online}/{total} vehicles online.",
+      "aiSuggestion": "AI Suggestion",
+      "aiSuggestionComplete": "AI has generated an optimized route."
     },
     "compliance": {
       "title": "Compliance",
@@ -17,7 +19,10 @@
       "checklist": "Compliance Checklist",
       "generateReport": "Generate Report",
       "generateReportDesc": "Generate an audit-ready compliance report with one click.",
-      "generatePdf": "Generate PDF Report"
+      "generatePdf": "Generate PDF Report",
+      "runAiAudit": "Run AI Audit",
+      "aiAuditCompleteTitle": "AI Audit Complete",
+      "aiAuditCompleteMessage": "{count} compliance issues found and automatically resolved."
     },
     "payments": {
       "title": "Payments",
