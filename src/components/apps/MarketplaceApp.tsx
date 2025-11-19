@@ -8,19 +8,58 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
-import { Camera, Loader2 } from 'lucide-react';
+import { Camera, Loader2, Link as LinkIcon, Share2 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 const mockItems = [
   { id: 1, name: 'Refurbished Laptops (x10)', price: 'R 15,000', category: 'E-Waste', image: '/ewaste/laptops.jpg' },
   { id: 2, name: 'Scrap Metal Bundle', price: 'R 5,000', category: 'Metals', image: '/ewaste/scrap.jpg' },
   { id: 3, name: 'Used Office Phones', price: 'R 2,500', category: 'E-Waste', image: '/ewaste/phones.jpg' },
   { id: 4, name: 'Recycled Plastic Pellets', price: 'R 8,000', category: 'Plastics', image: '/ewaste/pellets.jpg' },
 ];
+const BlockchainVisualization = () => {
+  const { t } = useTranslation();
+  const blocks = [
+    { id: '0', title: t('apps.marketplace.genesisBlock'), hash: '0xabc...' },
+    { id: '1', title: t('apps.marketplace.tx') + ' #1', hash: '0xdef...' },
+    { id: '2', title: t('apps.marketplace.tx') + ' #2', hash: '0xghi...' },
+    { id: '3', title: t('apps.marketplace.tx') + ' #3', hash: '0xjkl...' },
+  ];
+  return (
+    <div className="p-6">
+      <div className="flex items-center justify-center space-x-2">
+        {blocks.map((block, index) => (
+          <React.Fragment key={block.id}>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: index * 0.3 }}
+              className="bg-secondary p-3 rounded-lg text-center w-32"
+            >
+              <p className="font-bold text-sm flex items-center justify-center gap-1"><LinkIcon size={12} /> {block.title}</p>
+              <p className="text-xs text-muted-foreground truncate">{block.hash}</p>
+            </motion.div>
+            {index < blocks.length - 1 && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.3 + 0.2 }}
+              >
+                <Share2 className="text-muted-foreground" />
+              </motion.div>
+            )}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
+};
 const MarketplaceApp: React.FC = () => {
   const { t } = useTranslation();
   const [items, setItems] = useState(mockItems);
   const [newItem, setNewItem] = useState({ name: '', price: '', category: '', image: '' });
   const [isCameraOpen, setIsCameraOpen] = useState(false);
   const [isClassifying, setIsClassifying] = useState(false);
+  const [isBlockchainOpen, setIsBlockchainOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,71 +124,73 @@ const MarketplaceApp: React.FC = () => {
     }
   };
   return (
-    <ScrollArea className="h-full">
-      <div className="p-8">
-        <header className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold">{t('apps.marketplace.title')}</h1>
-            <p className="text-muted-foreground">{t('apps.marketplace.description')}</p>
-          </div>
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button>{t('apps.marketplace.createListing')}</Button>
-            </SheetTrigger>
-            <SheetContent>
-              <SheetHeader>
-                <SheetTitle>{t('apps.marketplace.createListing')}</SheetTitle>
-              </SheetHeader>
-              <form onSubmit={handleCreateListing} className="py-4 space-y-4">
-                <Button type="button" variant="outline" className="w-full" onClick={() => setIsCameraOpen(true)}>
-                  <Camera className="mr-2 h-4 w-4" /> {t('apps.marketplace.scanWithCamera')}
-                </Button>
-                {newItem.image && <img src={newItem.image} alt="Captured item" className="rounded-md border" />}
-                {isClassifying && (
-                  <div className="flex items-center justify-center text-muted-foreground">
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    {t('apps.marketplace.classifying')}...
+    <>
+      <ScrollArea className="h-full">
+        <div className="p-8">
+          <header className="flex justify-between items-center mb-8">
+            <div>
+              <h1 className="text-3xl font-bold">{t('apps.marketplace.title')}</h1>
+              <p className="text-muted-foreground">{t('apps.marketplace.description')}</p>
+            </div>
+            <Sheet>
+              <SheetTrigger asChild>
+                <Button>{t('apps.marketplace.createListing')}</Button>
+              </SheetTrigger>
+              <SheetContent>
+                <SheetHeader>
+                  <SheetTitle>{t('apps.marketplace.createListing')}</SheetTitle>
+                </SheetHeader>
+                <form onSubmit={handleCreateListing} className="py-4 space-y-4">
+                  <Button type="button" variant="outline" className="w-full" onClick={() => setIsCameraOpen(true)}>
+                    <Camera className="mr-2 h-4 w-4" /> {t('apps.marketplace.scanWithCamera')}
+                  </Button>
+                  {newItem.image && <img src={newItem.image} alt="Captured item" className="rounded-md border" />}
+                  {isClassifying && (
+                    <div className="flex items-center justify-center text-muted-foreground">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('apps.marketplace.classifying')}...
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Item Name</Label>
+                    <Input id="name" value={newItem.name} onChange={handleInputChange} placeholder="e.g., Used Keyboards" />
                   </div>
-                )}
-                <div className="space-y-2">
-                  <Label htmlFor="name">Item Name</Label>
-                  <Input id="name" value={newItem.name} onChange={handleInputChange} placeholder="e.g., Used Keyboards" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (R)</Label>
-                  <Input id="price" type="number" value={newItem.price} onChange={handleInputChange} placeholder="e.g., 500" />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Input id="category" value={newItem.category} onChange={handleInputChange} placeholder="e.g., E-Waste" />
-                </div>
-                <SheetFooter>
-                  <SheetClose asChild>
-                    <Button type="submit">Create</Button>
-                  </SheetClose>
-                </SheetFooter>
-              </form>
-            </SheetContent>
-          </Sheet>
-        </header>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {items.map((item) => (
-            <Card key={item.id} className="overflow-hidden">
-              <CardHeader className="p-0">
-                <img src={item.image} alt={item.name} className="w-full h-40 object-cover" />
-              </CardHeader>
-              <CardContent className="p-4">
-                <Badge variant="secondary" className="mb-2">{item.category}</Badge>
-                <CardTitle className="text-lg">{item.name}</CardTitle>
-              </CardContent>
-              <CardFooter className="flex justify-between items-center p-4 pt-0">
-                <span className="font-bold text-lg">{item.price}</span>
-                <Button variant="outline" size="sm">{t('apps.marketplace.view')}</Button>
-              </CardFooter>
-            </Card>
-          ))}
+                  <div className="space-y-2">
+                    <Label htmlFor="price">Price (R)</Label>
+                    <Input id="price" type="number" value={newItem.price} onChange={handleInputChange} placeholder="e.g., 500" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">Category</Label>
+                    <Input id="category" value={newItem.category} onChange={handleInputChange} placeholder="e.g., E-Waste" />
+                  </div>
+                  <SheetFooter>
+                    <SheetClose asChild>
+                      <Button type="submit">Create</Button>
+                    </SheetClose>
+                  </SheetFooter>
+                </form>
+              </SheetContent>
+            </Sheet>
+          </header>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {items.map((item) => (
+              <Card key={item.id} className="overflow-hidden flex flex-col">
+                <CardHeader className="p-0">
+                  <img src={item.image} alt={item.name} className="w-full h-40 object-cover" />
+                </CardHeader>
+                <CardContent className="p-4 flex-1">
+                  <Badge variant="secondary" className="mb-2">{item.category}</Badge>
+                  <CardTitle className="text-lg">{item.name}</CardTitle>
+                </CardContent>
+                <CardFooter className="flex justify-between items-center p-4 pt-0">
+                  <span className="font-bold text-lg">{item.price}</span>
+                  <Button variant="outline" size="sm" onClick={() => setIsBlockchainOpen(true)}>{t('apps.marketplace.viewOnBlockchain')}</Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
         </div>
-      </div>
+      </ScrollArea>
       <Dialog open={isCameraOpen} onOpenChange={(open) => {
         setIsCameraOpen(open);
         if (open) startCamera();
@@ -166,7 +207,15 @@ const MarketplaceApp: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </ScrollArea>
+      <Dialog open={isBlockchainOpen} onOpenChange={setIsBlockchainOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('apps.marketplace.transactionHistory')}</DialogTitle>
+          </DialogHeader>
+          <BlockchainVisualization />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
 export default MarketplaceApp;

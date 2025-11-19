@@ -5,12 +5,12 @@ import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
-import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor } from '@dnd-kit/core';
+import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor, UniqueIdentifier } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
 // Mock data
-const initialTasks = {
+const initialTasks: Record<string, { id: string; content: string }[]> = {
   unassigned: [
     { id: 'T001', content: 'Special pickup at Sandton City' },
     { id: 'T002', content: 'E-waste collection from Midrand Corp' },
@@ -66,10 +66,17 @@ const OperationsApp: React.FC = () => {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState(initialTasks);
   const sensors = useSensors(useSensor(PointerSensor));
+  const findContainer = (id: UniqueIdentifier) => {
+    const idStr = String(id);
+    if (idStr in tasks) return idStr;
+    return Object.keys(tasks).find(key => tasks[key].some(item => item.id === idStr));
+  };
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
-    if (active.id === over.id) return;
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (activeId === overId) return;
     const activeContainer = findContainer(active.id);
     const overContainer = findContainer(over.id);
     if (!activeContainer || !overContainer) return;
@@ -77,31 +84,26 @@ const OperationsApp: React.FC = () => {
       const newTasks = { ...prev };
       const activeItems = newTasks[activeContainer];
       const overItems = newTasks[overContainer];
-      const activeIndex = activeItems.findIndex(item => item.id === active.id);
-      const overIndex = overItems.findIndex(item => item.id === over.id);
-      let newIndex;
+      const activeIndex = activeItems.findIndex(item => item.id === activeId);
       if (activeContainer === overContainer) {
         // Reordering in same column
+        const overIndex = overItems.findIndex(item => item.id === overId);
         const [movedItem] = activeItems.splice(activeIndex, 1);
         activeItems.splice(overIndex, 0, movedItem);
       } else {
         // Moving to a different column
         const [movedItem] = activeItems.splice(activeIndex, 1);
-        if (over.id in newTasks) {
-          // Dropped on a column
-          newTasks[over.id].push(movedItem);
+        // Check if dropping on a column or an item in a column
+        const overIsContainer = overId in newTasks;
+        if (overIsContainer) {
+          newTasks[overId].push(movedItem);
         } else {
-          // Dropped on an item in another column
-          const overItemIndex = overItems.findIndex(item => item.id === over.id);
+          const overItemIndex = overItems.findIndex(item => item.id === overId);
           overItems.splice(overItemIndex, 0, movedItem);
         }
       }
       return newTasks;
     });
-  };
-  const findContainer = (id: string) => {
-    if (id in tasks) return id;
-    return Object.keys(tasks).find(key => tasks[key].some(item => item.id === id));
   };
   return (
     <div className="h-full flex flex-col">
@@ -118,7 +120,7 @@ const OperationsApp: React.FC = () => {
       <div className="flex-[1] border-t p-4">
         <h2 className="text-xl font-bold mb-4">{t('apps.operations.taskBoard')}</h2>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 h-[calc(100%-48px)]">
+          <div className="flex gap-4 h-[calc(100%-48px)] overflow-x-auto">
             <TaskColumn id="unassigned" title={t('apps.operations.unassignedTasks')} tasks={tasks.unassigned} />
             {routes.map(route => (
               <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id]} />
