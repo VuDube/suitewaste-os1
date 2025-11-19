@@ -5,8 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useDesktopStore } from '@/stores/useDesktopStore';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, QrCode } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 const mockTransactions = [
@@ -21,6 +22,7 @@ const PaymentsApp: React.FC = () => {
   const [transactions, setTransactions] = useState(mockTransactions);
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
+  const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipient || !amount) return;
@@ -40,6 +42,7 @@ const PaymentsApp: React.FC = () => {
       message: `Successfully sent ${newTransaction.amount} to ${recipient}.`,
     });
   };
+  const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`Amount: R ${amount}, Recipient: ${recipient}`)}`;
   return (
     <ScrollArea className="h-full">
       <div className="p-8">
@@ -74,7 +77,25 @@ const PaymentsApp: React.FC = () => {
                       onChange={(e) => setAmount(e.target.value)}
                     />
                   </div>
-                  <Button type="submit" className="w-full">{t('apps.payments.sendPayment')}</Button>
+                  <div className="flex gap-2">
+                    <Button type="submit" className="flex-1">{t('apps.payments.sendPayment')}</Button>
+                    <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button type="button" variant="outline" disabled={!recipient || !amount}>
+                          <QrCode className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent>
+                        <DialogHeader>
+                          <DialogTitle>{t('apps.payments.qrCodeFor', { amount })}</DialogTitle>
+                        </DialogHeader>
+                        <div className="flex flex-col items-center justify-center p-4">
+                          <img src={qrCodeUrl} alt="QR Code for payment" className="w-48 h-48" />
+                          <p className="text-sm text-muted-foreground mt-4 text-center">{t('apps.payments.scanQrCode')}</p>
+                        </div>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
                 </form>
               </CardContent>
             </Card>

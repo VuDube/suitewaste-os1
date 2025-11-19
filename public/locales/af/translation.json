@@ -2,7 +2,9 @@
   "apps": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "Intydse insigte in afvalbestuurbedrywighede."
+      "description": "Intydse insigte in afvalbestuurbedrywighede.",
+      "aiInsights": "KI Insigte & Afwykings",
+      "aiInsightsDesc": "Proaktiewe waarskuwings en voorstelle van ons KI."
     },
     "operations": {
       "title": "Bedrywighede",
@@ -11,7 +13,9 @@
       "liveTracking": "Regstreekse Voertuigopsporing",
       "trackingActive": "Voertuigopsporing is aktief. {online}/{total} voertuie aanlyn.",
       "aiSuggestion": "KI-voorstel",
-      "aiSuggestionComplete": "KI het 'n geoptimaliseerde roete gegenereer."
+      "aiSuggestionComplete": "KI het 'n geoptimaliseerde roete gegenereer.",
+      "taskBoard": "Taaktoewysingsbord",
+      "unassignedTasks": "Opgedraagde Take"
     },
     "compliance": {
       "title": "Nakoming",
@@ -31,7 +35,10 @@
       "recipient": "Ontvanger",
       "amount": "Bedrag (R)",
       "sendPayment": "Stuur Betaling",
-      "history": "Transaksiegeskiedenis"
+      "history": "Transaksiegeskiedenis",
+      "payWithQr": "Betaal met QR-kode",
+      "scanQrCode": "Skandeer hierdie QR-kode met jou mobiele bank-app om die betaling te voltooi.",
+      "qrCodeFor": "QR-kode vir R {amount}"
     },
     "marketplace": {
       "title": "e-Afval Markplein",
