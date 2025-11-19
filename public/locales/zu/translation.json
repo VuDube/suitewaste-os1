@@ -2,7 +2,9 @@
   "apps": {
     "dashboard": {
       "title": "Ideshibhodi",
-      "description": "Ulwazi lwesikhathi sangempela mayelana nokusebenza kokuphathwa kukadoti."
+      "description": "Ulwazi lwesikhathi sangempela mayelana nokusebenza kokuphathwa kukadoti.",
+      "aiInsights": "Ukuqonda kwe-AI & Okuphambene",
+      "aiInsightsDesc": "Izexwayiso ezisebenzayo neziphakamiso ezivela ku-AI yethu."
     },
     "operations": {
       "title": "Ukusebenza",
@@ -11,7 +13,9 @@
       "liveTracking": "Ukulandelela Izimoto Bukhoma",
       "trackingActive": "Ukulandelela izimoto kuyasebenza. {online}/{total} izimoto ziku-inthanethi.",
       "aiSuggestion": "Isiphakamiso se-AI",
-      "aiSuggestionComplete": "I-AI ikhiqize umzila olungiselelwe."
+      "aiSuggestionComplete": "I-AI ikhiqize umzila olungiselelwe.",
+      "taskBoard": "Ibhodi Lokwabela Imisebenzi",
+      "unassignedTasks": "Imisebenzi Engabelwe"
     },
     "compliance": {
       "title": "Ukuthobela",
@@ -31,7 +35,10 @@
       "recipient": "Umamukeli",
       "amount": "Isamba (R)",
       "sendPayment": "Thumela Inkokhelo",
-      "history": "Umlando Wokwenziwe"
+      "history": "Umlando Wokwenziwe",
+      "payWithQr": "Khokha nge-QR Code",
+      "scanQrCode": "Skena le khodi ye-QR ngohlelo lwakho lokusebenza lwebhange ukuze uqedele inkokhelo.",
+      "qrCodeFor": "Ikhodi ye-QR ye-R {amount}"
     },
     "marketplace": {
       "title": "Imakethe ye-e-Waste",

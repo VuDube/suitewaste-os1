@@ -2,7 +2,9 @@
   "apps": {
     "dashboard": {
       "title": "Dashboard",
-      "description": "Real-time insights into waste management operations."
+      "description": "Real-time insights into waste management operations.",
+      "aiInsights": "AI Insights & Anomalies",
+      "aiInsightsDesc": "Proactive alerts and suggestions from our AI."
     },
     "operations": {
       "title": "Operations",
@@ -11,7 +13,9 @@
       "liveTracking": "Live Vehicle Tracking",
       "trackingActive": "Vehicle tracking is active. {online}/{total} vehicles online.",
       "aiSuggestion": "AI Suggestion",
-      "aiSuggestionComplete": "AI has generated an optimized route."
+      "aiSuggestionComplete": "AI has generated an optimized route.",
+      "taskBoard": "Task Assignment Board",
+      "unassignedTasks": "Unassigned Tasks"
     },
     "compliance": {
       "title": "Compliance",
@@ -31,7 +35,10 @@
       "recipient": "Recipient",
       "amount": "Amount (R)",
       "sendPayment": "Send Payment",
-      "history": "Transaction History"
+      "history": "Transaction History",
+      "payWithQr": "Pay with QR Code",
+      "scanQrCode": "Scan this QR code with your mobile banking app to complete the payment.",
+      "qrCodeFor": "QR Code for R {amount}"
     },
     "marketplace": {
       "title": "e-Waste Marketplace",

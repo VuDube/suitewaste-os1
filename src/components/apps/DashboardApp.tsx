@@ -2,7 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { BarChart, LineChart, PieChart, Bar, Line, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
-import { ArrowUp, Recycle, Truck } from 'lucide-react';
+import { ArrowUp, Recycle, Truck, AlertTriangle, Bot } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 const kpiData = [
@@ -24,6 +24,10 @@ const collectionTrendData = [
   { name: 'Apr', tons: 450 },
   { name: 'May', tons: 600 },
   { name: 'Jun', tons: 580 },
+];
+const aiInsightsData = [
+  { text: 'Anomaly Detected: Route R003 shows 30% less collection than average for this area.', icon: AlertTriangle, color: 'text-yellow-500' },
+  { text: 'Suggestion: Consider adding an extra pickup for the Sandton area next week based on projected waste increase.', icon: Bot, color: 'text-blue-500' },
 ];
 const COLORS = ['#2E7D32', '#66BB6A', '#A5D6A7', '#C8E6C9', '#A1887F'];
 const containerVariants: Variants = {
@@ -77,12 +81,12 @@ const DashboardApp: React.FC = () => {
           ))}
         </motion.div>
         <motion.div
-          className="grid gap-8 md:grid-cols-2"
+          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.div variants={itemVariants}>
+          <motion.div variants={itemVariants} className="lg:col-span-2">
             <Card>
               <CardHeader>
                 <CardTitle>Waste Collection Trend</CardTitle>
@@ -102,6 +106,22 @@ const DashboardApp: React.FC = () => {
             </Card>
           </motion.div>
           <motion.div variants={itemVariants}>
+            <Card>
+              <CardHeader>
+                <CardTitle>{t('apps.dashboard.aiInsights')}</CardTitle>
+                <p className="text-sm text-muted-foreground">{t('apps.dashboard.aiInsightsDesc')}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {aiInsightsData.map((insight, index) => (
+                  <div key={index} className="flex items-start gap-3">
+                    <insight.icon className={`h-5 w-5 mt-1 flex-shrink-0 ${insight.color}`} />
+                    <p className="text-sm">{insight.text}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </motion.div>
+          <motion.div variants={itemVariants} className="lg:col-span-3">
             <Card>
               <CardHeader>
                 <CardTitle>Waste Composition</CardTitle>
