@@ -48,12 +48,17 @@
       "scanWithCamera": "Skandeer met kamera",
       "capture": "Neem foto",
       "classifying": "Klassifiseer item",
-      "classificationComplete": "Klassifikasie voltooi"
+      "classificationComplete": "Klassifikasie voltooi",
+      "viewOnBlockchain": "Besigtig op Ketting",
+      "transactionHistory": "Item Transaksiegeskiedenis",
+      "genesisBlock": "Genesis",
+      "tx": "Tx"
     },
     "training": {
       "title": "Opleidingsentrum",
       "description": "Verbeter jou vaardighede met ons interaktiewe modules.",
       "start": "Begin",
+      "resume": "Hervat",
       "completed": "Voltooi",
       "quizTitle": "Kennis Toets",
       "question": "Vraag",
@@ -61,7 +66,15 @@
       "submitQuiz": "Dien Vasvra in",
       "yourScore": "Jou telling",
       "retakeQuiz": "Herneem Vasvra",
-      "quizComplete": "Vasvra Voltooi"
+      "quizComplete": "Vasvra Voltooi",
+      "courses": "Kursusse",
+      "leaderboard": "Ranglys",
+      "myBadges": "My Kentekens",
+      "rank": "Rang",
+      "user": "Gebruiker",
+      "points": "Punte",
+      "earnedOn": "Verdien op",
+      "noBadges": "Voltooi kursusse om kentekens te verdien!"
     },
     "assistant": {
       "title": "KI-assistent",

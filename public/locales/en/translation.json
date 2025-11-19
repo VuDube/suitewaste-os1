@@ -48,12 +48,17 @@
       "scanWithCamera": "Scan with Camera",
       "capture": "Capture",
       "classifying": "Classifying Item",
-      "classificationComplete": "Classification Complete"
+      "classificationComplete": "Classification Complete",
+      "viewOnBlockchain": "View on Chain",
+      "transactionHistory": "Item Transaction History",
+      "genesisBlock": "Genesis",
+      "tx": "Tx"
     },
     "training": {
       "title": "Training Hub",
       "description": "Enhance your skills with our interactive modules.",
       "start": "Start",
+      "resume": "Resume",
       "completed": "Completed",
       "quizTitle": "Knowledge Check",
       "question": "Question",
@@ -61,7 +66,15 @@
       "submitQuiz": "Submit Quiz",
       "yourScore": "Your Score",
       "retakeQuiz": "Retake Quiz",
-      "quizComplete": "Quiz Complete"
+      "quizComplete": "Quiz Complete",
+      "courses": "Courses",
+      "leaderboard": "Leaderboard",
+      "myBadges": "My Badges",
+      "rank": "Rank",
+      "user": "User",
+      "points": "Points",
+      "earnedOn": "Earned on",
+      "noBadges": "Complete courses to earn badges!"
     },
     "assistant": {
       "title": "AI Assistant",
