@@ -4,10 +4,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minimize2, Square, Minus } from 'lucide-react';
 import { useDesktopStore, WindowInstance } from '@/stores/useDesktopStore';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-is-mobile';
+import { useTranslation } from 'react-i18next';
 type WindowProps = WindowInstance & {
   children: React.ReactNode;
 };
 const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
+  const { t } = useTranslation();
   const {
     focusWindow,
     closeApp,
@@ -22,6 +25,7 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
     updateWindowSize: state.updateWindowSize,
   }));
   const activeWindowId = useDesktopStore((state) => state.activeWindowId);
+  const isMobile = useIsMobile();
   const isActive = activeWindowId === id;
   const handleMaximizeToggle = () => {
     setWindowState(id, win.state === 'maximized' ? 'normal' : 'maximized');
@@ -34,10 +38,11 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   if (win.state === 'minimized') {
     return null;
   }
+  const isMaximized = win.state === 'maximized' || isMobile;
   return (
     <Rnd
-      size={win.state === 'maximized' ? { width: '100%', height: '100%' } : win.size}
-      position={win.state === 'maximized' ? { x: 0, y: 0 } : win.position}
+      size={isMaximized ? { width: '100%', height: '100%' } : win.size}
+      position={isMaximized ? { x: 0, y: 0 } : win.position}
       onDragStart={() => focusWindow(id)}
       onDragStop={(_e, d) => updateWindowPosition(id, { x: d.x, y: d.y })}
       onResizeStart={() => focusWindow(id)}
@@ -50,9 +55,9 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
       dragHandleClassName="window-drag-handle"
       bounds="parent"
       style={{ zIndex: win.zIndex }}
-      disableDragging={win.state === 'maximized'}
-      enableResizing={win.state !== 'maximized'}
-      className="flex"
+      disableDragging={isMaximized}
+      enableResizing={!isMaximized}
+      className={cn('flex', isMobile ? '!w-full !h-full !transform-none' : '')}
     >
       <AnimatePresence>
         <motion.div
@@ -61,21 +66,23 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
           animate="visible"
           exit="exit"
           className={cn(
-            'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg rounded-lg shadow-2xl border transition-colors',
-            isActive ? 'border-primary/50' : 'border-border/50'
+            'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg shadow-2xl border transition-colors',
+            isActive ? 'border-primary/50' : 'border-border/50',
+            isMobile ? 'rounded-none' : 'rounded-lg'
           )}
           onMouseDownCapture={() => focusWindow(id)}
         >
           <header
             className={cn(
-              'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 rounded-t-lg cursor-grab active:cursor-grabbing transition-colors',
-              isActive ? 'bg-primary/10' : 'bg-secondary/50'
+              'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 cursor-grab active:cursor-grabbing transition-colors',
+              isActive ? 'bg-primary/10' : 'bg-secondary/50',
+              isMobile ? 'rounded-none' : 'rounded-t-lg'
             )}
-            onDoubleClick={handleMaximizeToggle}
+            onDoubleClick={isMobile ? undefined : handleMaximizeToggle}
           >
             <div className="flex items-center gap-2">
               <win.icon className="w-4 h-4 text-foreground/80" />
-              <span className="text-sm font-medium text-foreground select-none">{win.title}</span>
+              <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
             </div>
             <div className="flex items-center">
               <button
@@ -84,9 +91,11 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
               >
                 <Minus size={14} />
               </button>
-              <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
-                {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
-              </button>
+              {!isMobile && (
+                <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
+                  {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                </button>
+              )}
               <button onClick={() => closeApp(id)} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
                 <X size={14} />
               </button>

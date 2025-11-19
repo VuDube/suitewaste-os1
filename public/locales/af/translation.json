@@ -1,10 +1,72 @@
 {
-  "settings": {
-    "title": "Instellings",
-    "description": "Pasmaak jou SuiteWaste OS-ervaring.",
-    "appearance": "Voorkoms",
-    "darkMode": "Donker Modus",
-    "wallpaper": "Werkskermagtergrond",
-    "language": "Taal"
+  "apps": {
+    "dashboard": {
+      "title": "Dashboard",
+      "description": "Intydse insigte in afvalbestuurbedrywighede."
+    },
+    "operations": {
+      "title": "Bedrywighede",
+      "dailyRoutes": "Daaglikse Roetes",
+      "optimizeRoutes": "Optimaliseer Roetes",
+      "liveTracking": "Regstreekse Voertuigopsporing",
+      "trackingActive": "Voertuigopsporing is aktief. {online}/{total} voertuie aanlyn."
+    },
+    "compliance": {
+      "title": "Nakoming",
+      "description": "Bestuur en volg regulatoriese nakoming.",
+      "checklist": "Nakomingskontrolelys",
+      "generateReport": "Genereer Verslag",
+      "generateReportDesc": "Genereer 'n oudit-gereed nakomingsverslag met een klik.",
+      "generatePdf": "Genereer PDF-verslag"
+    },
+    "payments": {
+      "title": "Betalings",
+      "description": "Hanteer kontantlose transaksies veilig.",
+      "newPayment": "Nuwe Betaling",
+      "recipient": "Ontvanger",
+      "amount": "Bedrag (R)",
+      "sendPayment": "Stuur Betaling",
+      "history": "Transaksiegeskiedenis"
+    },
+    "marketplace": {
+      "title": "e-Afval Markplein",
+      "description": "Verbind kopers en verkopers in die sirkulêre ekonomie.",
+      "createListing": "Skep Lysinskrywing",
+      "view": "Besigtig"
+    },
+    "training": {
+      "title": "Opleidingsentrum",
+      "description": "Verbeter jou vaardighede met ons interaktiewe modules.",
+      "start": "Begin",
+      "completed": "Voltooi"
+    },
+    "assistant": {
+      "title": "KI-assistent",
+      "placeholder": "Vra die assistent...",
+      "thinking": "Dink...",
+      "usageLimit": "KI-interaksies is onderhewig aan gebruiksbeperkings."
+    },
+    "settings": {
+      "title": "Instellings",
+      "description": "Pasmaak jou SuiteWaste OS-ervaring.",
+      "appearance": "Voorkoms",
+      "darkMode": "Donker Modus",
+      "wallpaper": "Werkskermagtergrond",
+      "language": "Taal"
+    }
+  },
+  "os": {
+    "notifications": {
+      "title": "Kennisgewings",
+      "clearAll": "Maak alles skoon",
+      "noNotifications": "Geen nuwe kennisgewings"
+    },
+    "desktop": {
+      "1": "Werkskerm 1",
+      "2": "Werkskerm 2",
+      "3": "Werkskerm 3",
+      "4": "Werkskerm 4",
+      "5": "Werkskerm 5"
+    }
   }
 }
