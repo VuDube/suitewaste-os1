@@ -1,0 +1,12 @@
+{
+  "connectPrinter": "Connect printer",
+  "bluetoothPairing": "Bluetooth pairing required",
+  "cameraAccess": "Camera access granted",
+  "gpsTracking": "GPS tracking active",
+  "poeOffline": "PoE switch offline: Check cable",
+  "offlineQueue": "Action queued offline. Will sync when connected.",
+  "httpsRequired": "Hardware requires HTTPS connection.",
+  "offline": "Offline",
+  "onlineStatus": "You are back online!",
+  "offlineStatus": "You are currently offline."
+}
