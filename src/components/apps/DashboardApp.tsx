@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { BarChart, LineChart, PieChart, Bar, Line, Pie, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 import { ArrowUp, Recycle, Truck } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, Variants } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
 const kpiData = [
   { title: 'Waste Collected (Tons)', value: '1,280', change: '+12.5%', icon: Recycle },
@@ -26,7 +26,7 @@ const collectionTrendData = [
   { name: 'Jun', tons: 580 },
 ];
 const COLORS = ['#2E7D32', '#66BB6A', '#A5D6A7', '#C8E6C9', '#A1887F'];
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -35,7 +35,7 @@ const containerVariants = {
     },
   },
 };
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { y: 20, opacity: 0 },
   visible: {
     y: 0,
