@@ -5,7 +5,9 @@ import { APPS } from '@/config/apps.config';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { motion } from 'framer-motion';
 import { Leaf } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 const StartMenu: React.FC = () => {
+  const { t } = useTranslation();
   const openApp = useDesktopStore((state) => state.openApp);
   const [isOpen, setIsOpen] = React.useState(false);
   return (
@@ -32,7 +34,7 @@ const StartMenu: React.FC = () => {
                 className="flex flex-col items-center justify-center gap-2 p-2 rounded-md hover:bg-accent w-full aspect-square transition-colors"
               >
                 <app.icon className="w-8 h-8 text-primary" />
-                <span className="text-xs text-center text-foreground truncate w-full">{app.title}</span>
+                <span className="text-xs text-center text-foreground truncate w-full">{t(app.title)}</span>
               </button>
             </motion.div>
           ))}

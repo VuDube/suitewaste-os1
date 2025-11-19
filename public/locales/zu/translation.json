@@ -1,10 +1,72 @@
 {
-  "settings": {
-    "title": "Izilungiselelo",
-    "description": "Yenza ngokwezifiso umuzwa wakho we-SuiteWaste OS.",
-    "appearance": "Ukubukeka",
-    "darkMode": "Imodi Emnyama",
-    "wallpaper": "Iphephadonga ledeskithophu",
-    "language": "Ulimi"
+  "apps": {
+    "dashboard": {
+      "title": "Ideshibhodi",
+      "description": "Ulwazi lwesikhathi sangempela mayelana nokusebenza kokuphathwa kukadoti."
+    },
+    "operations": {
+      "title": "Ukusebenza",
+      "dailyRoutes": "Imizila Yansuku zonke",
+      "optimizeRoutes": "Lungiselela Imizila",
+      "liveTracking": "Ukulandelela Izimoto Bukhoma",
+      "trackingActive": "Ukulandelela izimoto kuyasebenza. {online}/{total} izimoto ziku-inthanethi."
+    },
+    "compliance": {
+      "title": "Ukuthobela",
+      "description": "Phatha futhi ulandelele ukuthobela imithetho.",
+      "checklist": "Uhlu Lokuhlola Ukuthobela",
+      "generateReport": "Khiqiza Umbiko",
+      "generateReportDesc": "Khiqiza umbiko wokuthobela olungele ukuhlolwa ngokuchofoza okukodwa.",
+      "generatePdf": "Khiqiza Umbiko we-PDF"
+    },
+    "payments": {
+      "title": "Izinkokhelo",
+      "description": "Phatha izinkokhelo ezingenamali ngokuphepha.",
+      "newPayment": "Inkokhelo Entsha",
+      "recipient": "Umamukeli",
+      "amount": "Isamba (R)",
+      "sendPayment": "Thumela Inkokhelo",
+      "history": "Umlando Wokwenziwe"
+    },
+    "marketplace": {
+      "title": "Imakethe ye-e-Waste",
+      "description": "Ukuxhumanisa abathengi nabathengisi emnothweni oyindilinga.",
+      "createListing": "Dala Uhlu",
+      "view": "Buka"
+    },
+    "training": {
+      "title": "Isikhungo Sokuqeqesha",
+      "description": "Thuthukisa amakhono akho ngamamojula ethu asebenzisanayo.",
+      "start": "Qala",
+      "completed": "Kuphothuliwe"
+    },
+    "assistant": {
+      "title": "Umsizi we-AI",
+      "placeholder": "Buza umsizi...",
+      "thinking": "Ngiyacabanga...",
+      "usageLimit": "Ukusebenzisana ne-AI kunemikhawulo yokusetshenziswa."
+    },
+    "settings": {
+      "title": "Izilungiselelo",
+      "description": "Yenza ngokwezifiso umuzwa wakho we-SuiteWaste OS.",
+      "appearance": "Ukubukeka",
+      "darkMode": "Imodi Emnyama",
+      "wallpaper": "Iphephadonga ledeskithophu",
+      "language": "Ulimi"
+    }
+  },
+  "os": {
+    "notifications": {
+      "title": "Izaziso",
+      "clearAll": "Sula konke",
+      "noNotifications": "Azikho izaziso ezintsha"
+    },
+    "desktop": {
+      "1": "Ideskithophu 1",
+      "2": "Ideskithophu 2",
+      "3": "Ideskithophu 3",
+      "4": "Ideskithophu 4",
+      "5": "Ideskithophu 5"
+    }
   }
 }

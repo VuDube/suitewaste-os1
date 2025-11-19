@@ -1,10 +1,11 @@
 import React from 'react';
-import { useDesktopStore } from '@/stores/useDesktopStore';
-import { useShallow } from 'zustand/react/shallow';
 import Window from './Window';
 import { APPS } from '@/config/apps.config';
-const WindowManager: React.FC = () => {
-  const windows = useDesktopStore(useShallow((state) => state.windows));
+import { WindowInstance } from '@/stores/useDesktopStore';
+interface WindowManagerProps {
+  windows: WindowInstance[];
+}
+const WindowManager: React.FC<WindowManagerProps> = ({ windows }) => {
   return (
     <>
       {windows.map((win) => {

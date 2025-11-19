@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { APPS, AppConfig } from '@/config/apps.config';
+import { APPS } from '@/config/apps.config';
 export type WindowState = 'minimized' | 'maximized' | 'normal';
 export interface WindowInstance {
   id: string;
@@ -11,6 +11,7 @@ export interface WindowInstance {
   size: { width: number | string; height: number | string };
   zIndex: number;
   state: WindowState;
+  desktopId: string;
 }
 export interface Notification {
   id: string;
@@ -20,12 +21,19 @@ export interface Notification {
   message: string;
   timestamp: number;
 }
+export interface Desktop {
+  id: string;
+  name: string;
+}
 interface DesktopState {
   windows: WindowInstance[];
   notifications: Notification[];
   activeWindowId: string | null;
   nextZIndex: number;
   wallpaper: string;
+  desktops: Desktop[];
+  currentDesktopId: string;
+  nextDesktopId: number;
 }
 interface DesktopActions {
   openApp: (appId: string) => void;
@@ -38,6 +46,9 @@ interface DesktopActions {
   removeNotification: (notificationId: string) => void;
   clearNotifications: () => void;
   setWallpaper: (wallpaperUrl: string) => void;
+  addDesktop: () => void;
+  removeDesktop: (desktopId: string) => void;
+  setCurrentDesktop: (desktopId: string) => void;
 }
 const initialState: DesktopState = {
   windows: [],
@@ -45,6 +56,9 @@ const initialState: DesktopState = {
   activeWindowId: null,
   nextZIndex: 100,
   wallpaper: '/wallpapers/default.jpg',
+  desktops: [{ id: '1', name: 'os.desktop.1' }],
+  currentDesktopId: '1',
+  nextDesktopId: 2,
 };
 export const useDesktopStore = create<DesktopState & DesktopActions>()(
   immer((set, get) => ({
@@ -52,7 +66,8 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
     openApp: (appId) => {
       const appConfig = APPS.find((app) => app.id === appId);
       if (!appConfig) return;
-      const existingWindow = get().windows.find((w) => w.appId === appId);
+      const currentDesktopId = get().currentDesktopId;
+      const existingWindow = get().windows.find((w) => w.appId === appId && w.desktopId === currentDesktopId);
       if (existingWindow) {
         get().focusWindow(existingWindow.id);
         if (existingWindow.state === 'minimized') {
@@ -69,6 +84,7 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
         size: { width: 800, height: 600 },
         zIndex: get().nextZIndex,
         state: 'normal',
+        desktopId: currentDesktopId,
       };
       set((state) => {
         state.windows.push(newWindow);
@@ -80,7 +96,8 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
       set((state) => {
         state.windows = state.windows.filter((w) => w.id !== windowId);
         if (state.activeWindowId === windowId) {
-          state.activeWindowId = state.windows.length > 0 ? state.windows[state.windows.length - 1].id : null;
+          const windowsOnCurrentDesktop = state.windows.filter(w => w.desktopId === state.currentDesktopId);
+          state.activeWindowId = windowsOnCurrentDesktop.length > 0 ? windowsOnCurrentDesktop[windowsOnCurrentDesktop.length - 1].id : null;
         }
       });
     },
@@ -149,6 +166,36 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
     },
     setWallpaper: (wallpaperUrl) => {
       set({ wallpaper: wallpaperUrl });
+    },
+    addDesktop: () => {
+      set((state) => {
+        const newDesktopId = state.nextDesktopId.toString();
+        state.desktops.push({ id: newDesktopId, name: `os.desktop.${newDesktopId}` });
+        state.nextDesktopId += 1;
+        state.currentDesktopId = newDesktopId;
+      });
+    },
+    removeDesktop: (desktopId) => {
+      if (get().desktops.length <= 1) return;
+      set((state) => {
+        const desktopToRemove = state.desktops.find(d => d.id === desktopId);
+        if (!desktopToRemove) return;
+        const remainingDesktops = state.desktops.filter((d) => d.id !== desktopId);
+        const fallbackDesktopId = remainingDesktops[0].id;
+        // Move windows from the removed desktop to the fallback desktop
+        state.windows.forEach(win => {
+          if (win.desktopId === desktopId) {
+            win.desktopId = fallbackDesktopId;
+          }
+        });
+        state.desktops = remainingDesktops;
+        if (state.currentDesktopId === desktopId) {
+          state.currentDesktopId = fallbackDesktopId;
+        }
+      });
+    },
+    setCurrentDesktop: (desktopId) => {
+      set({ currentDesktopId: desktopId, activeWindowId: null });
     },
   }))
 );
