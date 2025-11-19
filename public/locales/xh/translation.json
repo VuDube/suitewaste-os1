@@ -4,14 +4,7 @@
       "title": "Ideshibhodi",
       "description": "Iingqiqo zexesha lokwenyani malunga nemisebenzi yolawulo lwenkunkuma.",
       "aiInsights": "Iingqiqo ze-AI & Iimpazamo",
-      "aiInsightsDesc": "Izilumkiso ezisebenzayo kunye neengcebiso ezivela kwi-AI yethu.",
-      "collected": "Inkunkuma Eqokelelweyo (Iitoni)",
-      "routesCompleted": "Iindlela Ezigqityiweyo",
-      "recyclingRate": "Ireyithi Yokurisayikilisha",
-      "collectionTrend": "Umkhwa Wokuqokelelwa Kwenkunkuma",
-      "composition": "Ukwakhiwa Kwenkunkuma",
-      "anomaly": "Kufunyenwe impazamo: Indlela R003 ibonisa ingqokelela engaphantsi ngama-30% kunomyinge wale ndawo.",
-      "suggestion": "Ingcebiso: Cinga ngokongeza ilori eyongezelelweyo kwindawo yaseSandton kwiveki ezayo ngokusekelwe kunyuso lwenkunkuma oluqikelelweyo."
+      "aiInsightsDesc": "Izilumkiso ezisebenzayo kunye neengcebiso ezivela kwi-AI yethu."
     },
     "operations": {
       "title": "Imisebenzi",
@@ -55,35 +48,20 @@
       "scanWithCamera": "Skena ngekhamera",
       "capture": "Thatha umfanekiso",
       "classifying": "Icandelo lento",
-      "classificationComplete": "Ukwahlulahlula kugqityiwe",
-      "viewOnBlockchain": "Jonga kwi-Chain",
-      "transactionHistory": "Imbali Yentengiselwano Yento",
-      "blockchainDescription": "Lo ngumboniso owenziwe lula wembali yobunini bento kwileja esasaziweyo.",
-      "genesisBlock": "Isiqalo",
-      "tx": "Intengiselwano"
+      "classificationComplete": "Ukwahlulahlula kugqityiwe"
     },
     "training": {
       "title": "Iziko Loqeqesho",
       "description": "Phucula izakhono zakho ngeemodyuli zethu ezisebenzisanayo.",
       "start": "Qala",
-      "resume": "Qhubeka",
       "completed": "Gqityiwe",
       "quizTitle": "Uvavanyo Lolwazi",
-      "quizDescription": "Phendula le mibuzo ilandelayo ukuvavanya ulwazi lwakho.",
       "question": "Umbuzo",
       "nextQuestion": "Umbuzo Olandelayo",
       "submitQuiz": "Ngenisa Imibuzo",
       "yourScore": "Inqaku Lakho",
       "retakeQuiz": "Phinda Imibuzo",
-      "quizComplete": "Imibuzo Igqityiwe",
-      "courses": "Izifundo",
-      "leaderboard": "Ibhodi yabaphambili",
-      "myBadges": "Iibheji Zam",
-      "rank": "Inqanaba",
-      "user": "Umsebenzisi",
-      "points": "Amanqaku",
-      "earnedOn": "Ifunyenwe ngo",
-      "noBadges": "Gqibezela izifundo ukuze ufumane iibheji!"
+      "quizComplete": "Imibuzo Igqityiwe"
     },
     "assistant": {
       "title": "Umncedisi we-AI",
@@ -118,25 +96,6 @@
       "maximize": "Khulisa",
       "restore": "Buyisela",
       "close": "Vala"
-    },
-    "window": {
-      "maximized": "Ifestile ikhulisiwe",
-      "restored": "Ifestile ibuyiselwe"
     }
-  },
-  "hardware": {
-    "offline": "Ayikho kwi-intanethi",
-    "onlineStatus": "Ubuyile kwi-intanethi!",
-    "offlineStatus": "Okwangoku awukho kwi-intanethi."
-  },
-  "charts": {
-    "jan": "Janyuwari",
-    "feb": "Februwari",
-    "mar": "Matshi",
-    "apr": "Epreli",
-    "may": "Meyi",
-    "jun": "Juni",
-    "tons": "iitoni",
-    "tonsCollected": "Iitoni Eziqokelelweyo"
   }
 }

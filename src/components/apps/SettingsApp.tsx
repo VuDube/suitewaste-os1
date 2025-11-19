@@ -16,6 +16,7 @@ const languages = [
   { code: 'en', name: 'English' },
   { code: 'zu', name: 'isiZulu' },
   { code: 'af', name: 'Afrikaans' },
+  { code: 'xh', name: 'isiXhosa' },
 ];
 const SettingsApp: React.FC = () => {
   const { t, i18n } = useTranslation();
