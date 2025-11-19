@@ -5,9 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { AnimatePresence, motion } from 'framer-motion';
 import { formatDistanceToNow } from 'date-fns';
-import { useTranslation } from 'react-i18next';
 const NotificationCenter: React.FC = () => {
-  const { t } = useTranslation();
   const { notifications, clearNotifications } = useDesktopStore(
     useShallow((state) => ({
       notifications: state.notifications,
@@ -17,17 +15,17 @@ const NotificationCenter: React.FC = () => {
   return (
     <div className="flex flex-col h-[400px]">
       <header className="flex items-center justify-between p-3 border-b">
-        <h3 className="font-semibold">{t('os.notifications.title')}</h3>
+        <h3 className="font-semibold">Notifications</h3>
         {notifications.length > 0 && (
           <Button variant="link" size="sm" onClick={clearNotifications} className="p-0 h-auto">
-            {t('os.notifications.clearAll')}
+            Clear all
           </Button>
         )}
       </header>
       <ScrollArea className="flex-1">
         {notifications.length === 0 ? (
           <div className="text-center text-muted-foreground p-8">
-            <p>{t('os.notifications.noNotifications')}</p>
+            <p>No new notifications</p>
           </div>
         ) : (
           <div className="p-2 space-y-2">

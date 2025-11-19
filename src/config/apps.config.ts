@@ -20,7 +20,7 @@ import AssistantApp from '@/components/apps/AssistantApp';
 import SettingsApp from '@/components/apps/SettingsApp';
 export interface AppConfig {
   id: string;
-  title: string; // This will now be a translation key
+  title: string;
   icon: React.ComponentType<LucideProps>;
   component: React.ComponentType;
   pinned?: boolean;
@@ -28,52 +28,52 @@ export interface AppConfig {
 export const APPS: AppConfig[] = [
   {
     id: 'dashboard',
-    title: 'apps.dashboard.title',
+    title: 'Dashboard',
     icon: LayoutDashboard,
     component: DashboardApp,
     pinned: true,
   },
   {
     id: 'operations',
-    title: 'apps.operations.title',
+    title: 'Operations',
     icon: Map,
     component: OperationsApp,
     pinned: true,
   },
   {
     id: 'compliance',
-    title: 'apps.compliance.title',
+    title: 'Compliance',
     icon: ShieldCheck,
     component: ComplianceApp,
   },
   {
     id: 'payments',
-    title: 'apps.payments.title',
+    title: 'Payments',
     icon: CreditCard,
     component: PaymentsApp,
   },
   {
     id: 'marketplace',
-    title: 'apps.marketplace.title',
+    title: 'e-Waste Marketplace',
     icon: Store,
     component: MarketplaceApp,
   },
   {
     id: 'training',
-    title: 'apps.training.title',
+    title: 'Training Hub',
     icon: GraduationCap,
     component: TrainingApp,
   },
   {
     id: 'assistant',
-    title: 'apps.assistant.title',
+    title: 'AI Assistant',
     icon: Bot,
     component: AssistantApp,
     pinned: true,
   },
   {
     id: 'settings',
-    title: 'apps.settings.title',
+    title: 'Settings',
     icon: Settings,
     component: SettingsApp,
   },
