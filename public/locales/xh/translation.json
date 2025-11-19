@@ -48,12 +48,17 @@
       "scanWithCamera": "Skena ngekhamera",
       "capture": "Thatha umfanekiso",
       "classifying": "Icandelo lento",
-      "classificationComplete": "Ukwahlulahlula kugqityiwe"
+      "classificationComplete": "Ukwahlulahlula kugqityiwe",
+      "viewOnBlockchain": "Jonga kwi-Chain",
+      "transactionHistory": "Imbali Yentengiselwano Yento",
+      "genesisBlock": "Isiqalo",
+      "tx": "Intengiselwano"
     },
     "training": {
       "title": "Iziko Loqeqesho",
       "description": "Phucula izakhono zakho ngeemodyuli zethu ezisebenzisanayo.",
       "start": "Qala",
+      "resume": "Qhubeka",
       "completed": "Gqityiwe",
       "quizTitle": "Uvavanyo Lolwazi",
       "question": "Umbuzo",
@@ -61,7 +66,15 @@
       "submitQuiz": "Ngenisa Imibuzo",
       "yourScore": "Inqaku Lakho",
       "retakeQuiz": "Phinda Imibuzo",
-      "quizComplete": "Imibuzo Igqityiwe"
+      "quizComplete": "Imibuzo Igqityiwe",
+      "courses": "Izifundo",
+      "leaderboard": "Ibhodi yabaphambili",
+      "myBadges": "Iibheji Zam",
+      "rank": "Inqanaba",
+      "user": "Umsebenzisi",
+      "points": "Amanqaku",
+      "earnedOn": "Ifunyenwe ngo",
+      "noBadges": "Gqibezela izifundo ukuze ufumane iibheji!"
     },
     "assistant": {
       "title": "Umncedisi we-AI",
