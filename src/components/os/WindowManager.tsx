@@ -1,12 +1,10 @@
 import React from 'react';
+import { useDesktopStore } from '@/stores/useDesktopStore';
+import { useShallow } from 'zustand/react/shallow';
 import Window from './Window';
 import { APPS } from '@/config/apps.config';
-import { WindowInstance } from '@/stores/useDesktopStore';
-import AppWrapper from '@/components/apps/AppWrapper';
-interface WindowManagerProps {
-  windows: WindowInstance[];
-}
-const WindowManager: React.FC<WindowManagerProps> = ({ windows }) => {
+const WindowManager: React.FC = () => {
+  const windows = useDesktopStore(useShallow((state) => state.windows));
   return (
     <>
       {windows.map((win) => {
@@ -14,9 +12,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({ windows }) => {
         if (!App) return null;
         return (
           <Window key={win.id} {...win}>
-            <AppWrapper>
-              <App />
-            </AppWrapper>
+            <App />
           </Window>
         );
       })}
