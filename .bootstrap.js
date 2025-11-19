@@ -77,7 +77,16 @@ function updateWranglerJsonc() {
 }
 
 function runSetupCommands() {
-    const commands = [];
+    const commands = [
+    "bun add react-rnd@^10.4.1",
+    "bun add i18next@^23.11.5",
+    "bun add react-i18next@^14.1.2",
+    "bun add i18next-browser-languagedetector@^8.0.0",
+    "bun add leaflet@^1.9.4",
+    "bun add react-leaflet@^4.2.1",
+    "bun add @types/leaflet@^1.9.12",
+    "bun add vite-plugin-pwa@^0.20.0"
+];
     
     if (commands.length === 0) {
         console.log('⊘ No setup commands to run');
