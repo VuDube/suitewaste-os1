@@ -9,7 +9,9 @@
       "dailyRoutes": "Daaglikse Roetes",
       "optimizeRoutes": "Optimaliseer Roetes",
       "liveTracking": "Regstreekse Voertuigopsporing",
-      "trackingActive": "Voertuigopsporing is aktief. {online}/{total} voertuie aanlyn."
+      "trackingActive": "Voertuigopsporing is aktief. {online}/{total} voertuie aanlyn.",
+      "aiSuggestion": "KI-voorstel",
+      "aiSuggestionComplete": "KI het 'n geoptimaliseerde roete gegenereer."
     },
     "compliance": {
       "title": "Nakoming",
@@ -17,7 +19,10 @@
       "checklist": "Nakomingskontrolelys",
       "generateReport": "Genereer Verslag",
       "generateReportDesc": "Genereer 'n oudit-gereed nakomingsverslag met een klik.",
-      "generatePdf": "Genereer PDF-verslag"
+      "generatePdf": "Genereer PDF-verslag",
+      "runAiAudit": "Begin KI-oudit",
+      "aiAuditCompleteTitle": "KI-oudit Voltooi",
+      "aiAuditCompleteMessage": "{count} nakomingskwessies gevind en outomaties opgelos."
     },
     "payments": {
       "title": "Betalings",

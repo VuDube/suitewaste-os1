@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { CreditCard } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 const mockTransactions = [
   { id: 'T001', date: '2023-10-26', amount: 'R 1,500.00', status: 'Completed' },
   { id: 'T002', date: '2023-10-25', amount: 'R 850.00', status: 'Completed' },
@@ -93,22 +94,32 @@ const PaymentsApp: React.FC = () => {
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <TableBody>
-                    {transactions.map((tx) => (
-                      <TableRow key={tx.id}>
-                        <TableCell>{tx.id}</TableCell>
-                        <TableCell>{tx.date}</TableCell>
-                        <TableCell>{tx.amount}</TableCell>
-                        <TableCell>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                            tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>{tx.status}</span>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
+                  <AnimatePresence>
+                    <TableBody>
+                      {transactions.map((tx) => (
+                        <motion.tr
+                          key={tx.id}
+                          layout
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -20 }}
+                          transition={{ duration: 0.3 }}
+                          className="hover:bg-muted/50"
+                        >
+                          <TableCell>{tx.id}</TableCell>
+                          <TableCell>{tx.date}</TableCell>
+                          <TableCell>{tx.amount}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                              tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>{tx.status}</span>
+                          </TableCell>
+                        </motion.tr>
+                      ))}
+                    </TableBody>
+                  </AnimatePresence>
                 </Table>
               </CardContent>
             </Card>
