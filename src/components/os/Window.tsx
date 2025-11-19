@@ -6,6 +6,7 @@ import { useDesktopStore, WindowInstance } from '@/stores/useDesktopStore';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-is-mobile';
 import { useTranslation } from 'react-i18next';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 type WindowProps = WindowInstance & {
   children: React.ReactNode;
 };
@@ -85,20 +86,34 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
               <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
             </div>
             <div className="flex items-center">
-              <button
-                onClick={() => setWindowState(id, 'minimized')}
-                className="p-2 rounded hover:bg-muted"
-              >
-                <Minus size={14} />
-              </button>
-              {!isMobile && (
-                <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
-                  {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
-                </button>
-              )}
-              <button onClick={() => closeApp(id)} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
-                <X size={14} />
-              </button>
+              <TooltipProvider delayDuration={300}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => setWindowState(id, 'minimized')} className="p-2 rounded hover:bg-muted">
+                      <Minus size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>{t('os.windowControls.minimize')}</p></TooltipContent>
+                </Tooltip>
+                {!isMobile && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
+                        {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')}</p></TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => closeApp(id)} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
+                      <X size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>{t('os.windowControls.close')}</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </header>
           <div className="flex-1 overflow-hidden bg-background/50">

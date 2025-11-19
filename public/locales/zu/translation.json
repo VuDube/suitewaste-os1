@@ -32,13 +32,24 @@
       "title": "Imakethe ye-e-Waste",
       "description": "Ukuxhumanisa abathengi nabathengisi emnothweni oyindilinga.",
       "createListing": "Dala Uhlu",
-      "view": "Buka"
+      "view": "Buka",
+      "scanWithCamera": "Skena ngekhamera",
+      "capture": "Thatha isithombe",
+      "classifying": "Ihlukanisa into",
+      "classificationComplete": "Ukuhlukanisa kuphothuliwe"
     },
     "training": {
       "title": "Isikhungo Sokuqeqesha",
       "description": "Thuthukisa amakhono akho ngamamojula ethu asebenzisanayo.",
       "start": "Qala",
-      "completed": "Kuphothuliwe"
+      "completed": "Kuphothuliwe",
+      "quizTitle": "Ukuhlolwa Kolwazi",
+      "question": "Umbuzo",
+      "nextQuestion": "Umbuzo Olandelayo",
+      "submitQuiz": "Thumela Imibuzo",
+      "yourScore": "Isikolo Sakho",
+      "retakeQuiz": "Phinda Imibuzo",
+      "quizComplete": "Imibuzo Iphelele"
     },
     "assistant": {
       "title": "Umsizi we-AI",
@@ -67,6 +78,12 @@
       "3": "Ideskithophu 3",
       "4": "Ideskithophu 4",
       "5": "Ideskithophu 5"
+    },
+    "windowControls": {
+      "minimize": "Nciphisa",
+      "maximize": "Khulisa",
+      "restore": "Buyisela",
+      "close": "Vala"
     }
   }
 }
