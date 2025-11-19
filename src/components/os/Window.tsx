@@ -28,8 +28,8 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   };
   const windowVariants = {
     hidden: { scale: 0.8, opacity: 0 },
-    visible: { scale: 1, opacity: 1, transition: { duration: 0.2, ease: 'easeOut' } },
-    exit: { scale: 0.8, opacity: 0, transition: { duration: 0.15, ease: 'easeIn' } },
+    visible: { scale: 1, opacity: 1, transition: { duration: 0.2, ease: 'easeOut' as const } },
+    exit: { scale: 0.8, opacity: 0, transition: { duration: 0.15, ease: 'easeIn' as const } },
   };
   if (win.state === 'minimized') {
     return null;
