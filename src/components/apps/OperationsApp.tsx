@@ -1,8 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
 import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor, UniqueIdentifier } from '@dnd-kit/core';
@@ -66,6 +64,27 @@ const OperationsApp: React.FC = () => {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState(initialTasks);
   const sensors = useSensors(useSensor(PointerSensor));
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<L.Map | null>(null);
+  useEffect(() => {
+    if (mapRef.current && !mapInstance.current) {
+      mapInstance.current = L.map(mapRef.current).setView(joburgCenter, 11);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapInstance.current);
+      routes.forEach(route => {
+        L.marker(vehiclePositions[route.id], { icon: truckIcon })
+          .addTo(mapInstance.current!)
+          .bindPopup(route.name);
+      });
+    }
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, []);
   const findContainer = (id: UniqueIdentifier) => {
     const idStr = String(id);
     if (idStr in tasks) return idStr;
@@ -108,14 +127,7 @@ const OperationsApp: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-[2] bg-muted relative">
-        <MapContainer center={joburgCenter} zoom={11} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-          {routes.map(route => (
-            <Marker key={route.id} position={vehiclePositions[route.id]} icon={truckIcon}>
-              <Popup>{route.name}</Popup>
-            </Marker>
-          ))}
-        </MapContainer>
+        <div ref={mapRef} className="h-full w-full" />
       </div>
       <div className="flex-[1] border-t p-4">
         <h2 className="text-xl font-bold mb-4">{t('apps.operations.taskBoard')}</h2>
