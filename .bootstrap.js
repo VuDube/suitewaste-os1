@@ -87,7 +87,7 @@ function runSetupCommands() {
     "bun add @types/leaflet@^1.9.12",
     "bun add vite-plugin-pwa@^0.20.0",
     "bun install react-rnd",
-    "bun install i18next-http-backend"
+    "bun install i18next-http-backend react-leaflet"
 ];
     
     if (commands.length === 0) {
