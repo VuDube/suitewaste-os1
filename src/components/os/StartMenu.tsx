@@ -28,7 +28,7 @@ const StartMenu: React.FC = () => {
             >
               <button
                 onClick={() => {
-                  openApp(app.id);
+                  openApp(app.id, { title: app.title, icon: app.icon });
                   setIsOpen(false);
                 }}
                 className="flex flex-col items-center justify-center gap-2 p-2 rounded-md hover:bg-accent w-full aspect-square transition-colors"

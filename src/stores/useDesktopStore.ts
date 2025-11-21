@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import { APPS } from '@/config/apps.config';
+
 export type WindowState = 'minimized' | 'maximized' | 'normal';
 export interface WindowInstance {
   id: string;
@@ -37,7 +37,7 @@ interface DesktopState {
   appsState: Record<string, any>;
 }
 interface DesktopActions {
-  openApp: (appId: string) => void;
+  openApp: (appId: string, meta?: { title?: string; icon?: React.ComponentType<{ className?: string }> }) => void;
   closeApp: (windowId: string) => void;
   focusWindow: (windowId: string) => void;
   setWindowState: (windowId: string, state: WindowState) => void;
@@ -66,9 +66,7 @@ const initialState: DesktopState = {
 export const useDesktopStore = create<DesktopState & DesktopActions>()(
   immer((set, get) => ({
     ...initialState,
-    openApp: (appId) => {
-      const appConfig = APPS.find((app) => app.id === appId);
-      if (!appConfig) return;
+    openApp: (appId, meta?: { title?: string; icon?: React.ComponentType<{ className?: string }> }) => {
       const currentDesktopId = get().currentDesktopId;
       const existingWindow = get().windows.find((w) => w.appId === appId && w.desktopId === currentDesktopId);
       if (existingWindow) {
@@ -78,11 +76,12 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
         }
         return;
       }
+      const defaultIcon: React.ComponentType<{ className?: string }> = () => null;
       const newWindow: WindowInstance = {
         id: `win_${crypto.randomUUID()}`,
-        appId: appConfig.id,
-        title: appConfig.title,
-        icon: appConfig.icon,
+        appId: appId,
+        title: meta?.title ?? appId,
+        icon: meta?.icon ?? defaultIcon,
         position: { x: Math.random() * 200 + 50, y: Math.random() * 100 + 50 },
         size: { width: 800, height: 600 },
         zIndex: get().nextZIndex,
