@@ -2,6 +2,59 @@ import React, { useRef, useEffect } from 'react';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import WindowManager from './WindowManager';
 import { useShallow } from 'zustand/react/shallow';
+const SuiteWasteWallpaper: React.FC = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    let animationFrameId: number;
+    const draw = () => {
+      const width = (canvas.width = window.innerWidth);
+      const height = (canvas.height = window.innerHeight);
+      // Background Gradient
+      const gradient = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) / 1.5);
+      gradient.addColorStop(0, '#4CAF50'); // Lighter green center
+      gradient.addColorStop(1, '#2E7D32'); // Brand green edge
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
+      // Logo Drawing
+      const scale = Math.min(width, height) * 0.2;
+      const centerX = width / 2;
+      const centerY = height / 2 - scale * 0.2; // Shift up slightly
+      // Leaf Path
+      ctx.beginPath();
+      ctx.moveTo(centerX, centerY - scale * 0.6);
+      ctx.quadraticCurveTo(centerX - scale * 0.8, centerY, centerX, centerY + scale * 0.8);
+      ctx.quadraticCurveTo(centerX + scale * 0.8, centerY, centerX, centerY - scale * 0.6);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+      ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.shadowColor = 'transparent';
+      // Text
+      const fontSize = Math.max(24, Math.min(width, height) * 0.05);
+      ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText('SuiteWaste OS', centerX, centerY + scale);
+    };
+    const handleResize = () => {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = requestAnimationFrame(draw);
+    };
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />;
+};
 const AnimatedBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   useEffect(() => {
@@ -78,7 +131,7 @@ const AnimatedBackground: React.FC = () => {
       cancelAnimationFrame(animationFrameId);
     };
   }, []);
-  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0" />;
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full z-0 opacity-50" />;
 };
 const Desktop: React.FC = () => {
   const { wallpaper, windows, currentDesktopId } = useDesktopStore(
@@ -92,8 +145,9 @@ const Desktop: React.FC = () => {
   return (
     <main
       className="flex-1 h-full w-full relative overflow-hidden bg-cover bg-center"
-      style={{ backgroundImage: `url(${wallpaper})` }}
+      style={wallpaper ? { backgroundImage: `url(${wallpaper})` } : {}}
     >
+      {!wallpaper && <SuiteWasteWallpaper />}
       <AnimatedBackground />
       <div className="absolute inset-0 bg-black/30 z-0" />
       <div className="relative z-10 h-full w-full">

@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-
 export type WindowState = 'minimized' | 'maximized' | 'normal';
 export interface WindowInstance {
   id: string;
@@ -57,7 +56,7 @@ const initialState: DesktopState = {
   notifications: [],
   activeWindowId: null,
   nextZIndex: 100,
-  wallpaper: '/wallpapers/default.jpg',
+  wallpaper: '', // Default to empty to trigger canvas wallpaper
   desktops: [{ id: '1', name: 'os.desktop.1' }],
   currentDesktopId: '1',
   nextDesktopId: 2,
@@ -107,7 +106,6 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
       // avoid calling set at all if the window doesn't exist
       const exists = get().windows.find((w) => w.id === windowId);
       if (!exists) return;
-
       set((state) => {
         const targetWindow = state.windows.find((w) => w.id === windowId);
         if (!targetWindow) return;
