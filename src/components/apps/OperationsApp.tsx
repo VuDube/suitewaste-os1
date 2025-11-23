@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import L from 'leaflet';
 import { useTranslation } from 'react-i18next';
-import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor, UniqueIdentifier } from '@dnd-kit/core';
+import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor, TouchSensor, useDroppable, UniqueIdentifier } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
@@ -40,19 +40,20 @@ const TaskCard = ({ id, content }: { id: string; content: string }) => {
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
     <div ref={setNodeRef} style={style} {...attributes} className="p-2.5 mb-2 bg-card border rounded-md shadow-sm flex items-center">
-      <button {...listeners} className="cursor-grab p-1 -ml-1 mr-2 text-muted-foreground"><GripVertical size={16} /></button>
+      <button {...listeners} className="cursor-grab p-1 -ml-1 mr-2 text-muted-foreground touch-none"><GripVertical size={16} /></button>
       <p className="text-sm flex-1">{content}</p>
     </div>
   );
 };
 const TaskColumn = ({ id, title, tasks }: { id: string; title: string; tasks: { id: string; content: string }[] }) => {
-  const { setNodeRef } = useSortable({ id });
+  const { setNodeRef } = useDroppable({ id });
+  const taskIds = tasks.map(t => t.id);
   return (
     <Card className="flex-1 min-w-[250px] flex flex-col">
       <CardHeader><CardTitle className="text-base">{title}</CardTitle></CardHeader>
       <ScrollArea className="flex-1">
         <CardContent ref={setNodeRef} className="h-full p-4">
-          <SortableContext id={id} items={tasks} strategy={verticalListSortingStrategy}>
+          <SortableContext id={id} items={taskIds} strategy={verticalListSortingStrategy}>
             {tasks.map(task => <TaskCard key={task.id} id={task.id} content={task.content} />)}
           </SortableContext>
         </CardContent>
@@ -63,7 +64,7 @@ const TaskColumn = ({ id, title, tasks }: { id: string; title: string; tasks: { 
 const OperationsApp: React.FC = () => {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState(initialTasks);
-  const sensors = useSensors(useSensor(PointerSensor));
+  const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
   useEffect(() => {
