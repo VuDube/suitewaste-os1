@@ -20,10 +20,8 @@ const languages = [
 ];
 const SettingsApp: React.FC = () => {
   const { t, i18n } = useTranslation();
-  const { wallpaper, setWallpaper } = useDesktopStore((state) => ({
-    wallpaper: state.wallpaper,
-    setWallpaper: state.setWallpaper,
-  }));
+  const wallpaper = useDesktopStore((state) => state.wallpaper);
+  const setWallpaper = useDesktopStore((state) => state.setWallpaper);
   const { isDark, toggleTheme } = useTheme();
   const handleLanguageChange = (langCode: string) => {
     i18n.changeLanguage(langCode);

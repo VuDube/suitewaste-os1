@@ -104,18 +104,21 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
       });
     },
     focusWindow: (windowId) => {
-      const window = get().windows.find((w) => w.id === windowId);
-      if (!window || window.zIndex === get().nextZIndex - 1) {
-        set({ activeWindowId: windowId });
-        return;
-      }
+      // avoid calling set at all if the window doesn't exist
+      const exists = get().windows.find((w) => w.id === windowId);
+      if (!exists) return;
+
       set((state) => {
         const targetWindow = state.windows.find((w) => w.id === windowId);
-        if (targetWindow) {
-          targetWindow.zIndex = state.nextZIndex;
-          state.nextZIndex += 1;
+        if (!targetWindow) return;
+        // If already topmost, still ensure activeWindowId is set
+        if (targetWindow.zIndex === state.nextZIndex - 1) {
           state.activeWindowId = windowId;
+          return;
         }
+        targetWindow.zIndex = state.nextZIndex;
+        state.nextZIndex += 1;
+        state.activeWindowId = windowId;
       });
     },
     setWindowState: (windowId, windowState) => {
@@ -124,7 +127,12 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
         if (window) {
           window.state = windowState;
           if (windowState !== 'minimized') {
-            get().focusWindow(windowId);
+            // Bring window to front and set activeWindowId atomically to avoid nested updates
+            if (window.zIndex !== state.nextZIndex - 1) {
+              window.zIndex = state.nextZIndex;
+              state.nextZIndex += 1;
+            }
+            state.activeWindowId = windowId;
           }
         }
       });
@@ -164,10 +172,14 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
       });
     },
     clearNotifications: () => {
-      set({ notifications: [] });
+      set((state) => {
+        state.notifications = [];
+      });
     },
     setWallpaper: (wallpaperUrl) => {
-      set({ wallpaper: wallpaperUrl });
+      set((state) => {
+        state.wallpaper = wallpaperUrl;
+      });
     },
     addDesktop: () => {
       set((state) => {
@@ -197,7 +209,10 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
       });
     },
     setCurrentDesktop: (desktopId) => {
-      set({ currentDesktopId: desktopId, activeWindowId: null });
+      set((state) => {
+        state.currentDesktopId = desktopId;
+        state.activeWindowId = null;
+      });
     },
     updateAppState: (appId, data) => {
       set((state) => {

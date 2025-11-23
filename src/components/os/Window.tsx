@@ -12,19 +12,11 @@ type WindowProps = WindowInstance & {
 };
 const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   const { t } = useTranslation();
-  const {
-    focusWindow,
-    closeApp,
-    setWindowState,
-    updateWindowPosition,
-    updateWindowSize,
-  } = useDesktopStore((state) => ({
-    focusWindow: state.focusWindow,
-    closeApp: state.closeApp,
-    setWindowState: state.setWindowState,
-    updateWindowPosition: state.updateWindowPosition,
-    updateWindowSize: state.updateWindowSize,
-  }));
+  const focusWindow = useDesktopStore((state) => state.focusWindow);
+  const closeApp = useDesktopStore((state) => state.closeApp);
+  const setWindowState = useDesktopStore((state) => state.setWindowState);
+  const updateWindowPosition = useDesktopStore((state) => state.updateWindowPosition);
+  const updateWindowSize = useDesktopStore((state) => state.updateWindowSize);
   const activeWindowId = useDesktopStore((state) => state.activeWindowId);
   const isMobile = useIsMobile();
   const isActive = activeWindowId === id;
