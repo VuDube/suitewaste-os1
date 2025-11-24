@@ -10,7 +10,7 @@
  */
 import React, { useEffect } from "react";
 import { isRouteErrorResponse, useRouteError } from "react-router-dom";
-import ErrorFallback from "./ErrorBoundary";
+import { ErrorBoundary as ErrorFallback } from "@/components/ErrorBoundary";
 import { errorReporter } from "@/lib/errorReporter";
 /**
  * RouteErrorBoundary
@@ -20,12 +20,9 @@ import { errorReporter } from "@/lib/errorReporter";
  * unconditionally at the top of the component and then preserve the previous
  * effect/reporting/rendering behavior.
  */
-export default function RouteErrorBoundary(): JSX.Element {
+export function RouteErrorBoundary(): JSX.Element {
   // Call the hook unconditionally (fixes rules-of-hooks warnings)
-  const routeError = useRouteError();
-  // Maintain a local `error` variable initialized from the hook result,
-  // as requested by the change requirements.
-  let error: unknown = routeError;
+  const error = useRouteError();
   useEffect(() => {
     // Preserve previous reporting behavior: attempt to report route errors,
     // route error responses, and fallback to stringification for unexpected shapes.

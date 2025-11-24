@@ -7,10 +7,9 @@
     "dev": "vite --host 0.0.0.0 --port ${PORT:-3000}",
     "build": "vite build",
     "lint": "eslint --cache -f json --quiet .",
-    "preview": "bun run build && vite preview --host 0.0.0.0 --port ${PORT:-4173}",
-    "deploy": "bun run build && wrangler deploy",
-    "cf-typegen": "wrangler types",
-    "prepare": "bun .bootstrap.js || true"
+    "preview": "vite preview --host 0.0.0.0 --port ${PORT:-4173}",
+    "deploy": "vite build && wrangler deploy",
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20250807.0",
