@@ -1,5 +1,5 @@
 import React from 'react';
-import { Rnd } from 'react-rnd/lib/index.js';
+
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minimize2, Square, Minus } from 'lucide-react';
 import { useDesktopStore, WindowInstance } from '@/stores/useDesktopStore';
@@ -20,6 +20,23 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   const activeWindowId = useDesktopStore((state) => state.activeWindowId);
   const isMobile = useIsMobile();
   const isActive = activeWindowId === id;
+  const [RndComponent, setRndComponent] = React.useState<any>(null);
+  React.useEffect(() => {
+    let mounted = true;
+    // Dynamically import react-rnd on the client only to avoid SSR/Vite resolution issues
+    import('react-rnd')
+      .then((m) => {
+        if (mounted) {
+          setRndComponent(() => (m?.Rnd ?? m?.default ?? m));
+        }
+      })
+      .catch(() => {
+        // swallow import errors (keep fallback rendering)
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
   const handleMaximizeToggle = () => {
     setWindowState(id, win.state === 'maximized' ? 'normal' : 'maximized');
   };
@@ -32,88 +49,160 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
     return null;
   }
   const isMaximized = win.state === 'maximized' || isMobile;
+
   return (
-    <Rnd
-      size={isMaximized ? { width: '100%', height: '100%' } : win.size}
-      position={isMaximized ? { x: 0, y: 0 } : win.position}
-      onDragStart={() => focusWindow(id)}
-      onDragStop={(_e, d) => updateWindowPosition(id, { x: d.x, y: d.y })}
-      onResizeStart={() => focusWindow(id)}
-      onResizeStop={(_e, _dir, ref, _delta, pos) => {
-        updateWindowSize(id, { width: ref.style.width, height: ref.style.height });
-        updateWindowPosition(id, { x: pos.x, y: pos.y });
-      }}
-      minWidth={300}
-      minHeight={200}
-      dragHandleClassName="window-drag-handle"
-      bounds="parent"
-      style={{ zIndex: win.zIndex }}
-      disableDragging={isMaximized}
-      enableResizing={!isMaximized}
-      className={cn('flex', isMobile ? '!w-full !h-full !transform-none' : '')}
-    >
-      <AnimatePresence>
-        <motion.div
-          variants={windowVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          className={cn(
-            'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg shadow-2xl border transition-colors',
-            isActive ? 'border-primary/50' : 'border-border/50',
-            isMobile ? 'rounded-none' : 'rounded-lg'
-          )}
-          onMouseDownCapture={() => focusWindow(id)}
-        >
-          <header
+    RndComponent ? (
+      <RndComponent
+        size={isMaximized ? { width: '100%', height: '100%' } : win.size}
+        position={isMaximized ? { x: 0, y: 0 } : win.position}
+        onDragStart={() => focusWindow(id)}
+        onDragStop={(_e: any, d: any) => updateWindowPosition(id, { x: d.x, y: d.y })}
+        onResizeStart={() => focusWindow(id)}
+        onResizeStop={(_e: any, _dir: any, ref: any, _delta: any, pos: any) => {
+          updateWindowSize(id, { width: ref.style.width, height: ref.style.height });
+          updateWindowPosition(id, { x: pos.x, y: pos.y });
+        }}
+        minWidth={300}
+        minHeight={200}
+        dragHandleClassName="window-drag-handle"
+        bounds="parent"
+        style={{ zIndex: win.zIndex }}
+        disableDragging={isMaximized}
+        enableResizing={!isMaximized}
+        className={cn('flex', isMobile ? '!w-full !h-full !transform-none' : '')}
+      >
+        <AnimatePresence>
+          <motion.div
+            variants={windowVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
             className={cn(
-              'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 cursor-grab active:cursor-grabbing transition-colors',
-              isActive ? 'bg-primary/10' : 'bg-secondary/50',
-              isMobile ? 'rounded-none' : 'rounded-t-lg'
+              'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg shadow-2xl border transition-colors',
+              isActive ? 'border-primary/50' : 'border-border/50',
+              isMobile ? 'rounded-none' : 'rounded-lg'
             )}
-            onDoubleClick={isMobile ? undefined : handleMaximizeToggle}
+            onMouseDownCapture={() => focusWindow(id)}
           >
-            <div className="flex items-center gap-2">
-              <win.icon className="w-4 h-4 text-foreground/80" />
-              <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
-            </div>
-            <div className="flex items-center">
-              <TooltipProvider delayDuration={300}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button onClick={() => setWindowState(id, 'minimized')} className="p-2 rounded hover:bg-muted">
-                      <Minus size={14} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent><p>{t('os.windowControls.minimize')}</p></TooltipContent>
-                </Tooltip>
-                {!isMobile && (
+            <header
+              className={cn(
+                'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 cursor-grab active:cursor-grabbing transition-colors',
+                isActive ? 'bg-primary/10' : 'bg-secondary/50',
+                isMobile ? 'rounded-none' : 'rounded-t-lg'
+              )}
+              onDoubleClick={isMobile ? undefined : handleMaximizeToggle}
+            >
+              <div className="flex items-center gap-2">
+                <win.icon className="w-4 h-4 text-foreground/80" />
+                <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
+              </div>
+              <div className="flex items-center">
+                <TooltipProvider delayDuration={300}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
-                        {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                      <button onClick={() => setWindowState(id, 'minimized')} className="p-2 rounded hover:bg-muted">
+                        <Minus size={14} />
                       </button>
                     </TooltipTrigger>
-                    <TooltipContent><p>{win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')}</p></TooltipContent>
+                    <TooltipContent><p>{t('os.windowControls.minimize')}</p></TooltipContent>
                   </Tooltip>
-                )}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button onClick={() => closeApp(id)} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
-                      <X size={14} />
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent><p>{t('os.windowControls.close')}</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                  {!isMobile && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
+                          {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>{win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')}</p></TooltipContent>
+                    </Tooltip>
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button onClick={() => closeApp(id)} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
+                        <X size={14} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{t('os.windowControls.close')}</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </header>
+            <div className="flex-1 overflow-hidden bg-background/50">
+              {children}
             </div>
-          </header>
-          <div className="flex-1 overflow-hidden bg-background/50">
-            {children}
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </Rnd>
+          </motion.div>
+        </AnimatePresence>
+      </RndComponent>
+    ) : (
+      // Fallback static container used during SSR / before react-rnd is loaded.
+      // Preserves layout and styling while disabling drag/resize until client import completes.
+      <div
+        style={{ zIndex: win.zIndex }}
+        className={cn('flex', isMobile ? '!w-full !h-full !transform-none' : '')}
+      >
+        <AnimatePresence>
+          <motion.div
+            variants={windowVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className={cn(
+              'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg shadow-2xl border transition-colors',
+              isActive ? 'border-primary/50' : 'border-border/50',
+              isMobile ? 'rounded-none' : 'rounded-lg'
+            )}
+            onMouseDownCapture={() => focusWindow(id)}
+          >
+            <header
+              className={cn(
+                'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 cursor-grab active:cursor-grabbing transition-colors',
+                isActive ? 'bg-primary/10' : 'bg-secondary/50',
+                isMobile ? 'rounded-none' : 'rounded-t-lg'
+              )}
+              onDoubleClick={isMobile ? undefined : handleMaximizeToggle}
+            >
+              <div className="flex items-center gap-2">
+                <win.icon className="w-4 h-4 text-foreground/80" />
+                <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
+              </div>
+              <div className="flex items-center">
+                <TooltipProvider delayDuration={300}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button onClick={() => setWindowState(id, 'minimized')} className="p-2 rounded hover:bg-muted">
+                        <Minus size={14} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{t('os.windowControls.minimize')}</p></TooltipContent>
+                  </Tooltip>
+                  {!isMobile && (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button onClick={handleMaximizeToggle} className="p-2 rounded hover:bg-muted">
+                          {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent><p>{win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')}</p></TooltipContent>
+                    </Tooltip>
+                  )}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button onClick={() => closeApp(id)} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
+                        <X size={14} />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{t('os.windowControls.close')}</p></TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </header>
+            <div className="flex-1 overflow-hidden bg-background/50">
+              {children}
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
+    )
   );
 };
 export default Window;
