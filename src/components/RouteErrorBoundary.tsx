@@ -1,56 +1,55 @@
-/**
- * RouteErrorBoundary.tsx
- *
- * Ensures useRouteError() is called unconditionally at the top-level of the component
- * to satisfy react-hooks/rules-of-hooks. Preserves existing behavior:
- *  - uses useEffect to report errors via errorReporter
- *  - preserves isRouteErrorResponse handling and ErrorFallback rendering
- *
- * Note: Imports are kept consistent with the surrounding codebase.
- */
-import React, { useEffect } from "react";
-import { isRouteErrorResponse, useRouteError } from "react-router-dom";
-import { ErrorBoundary as ErrorFallback } from "@/components/ErrorBoundary";
-import { errorReporter } from "@/lib/errorReporter";
-/**
- * RouteErrorBoundary
- *
- * This component is used as the errorElement in react-router route definitions.
- * To comply with the lint rule react-hooks/rules-of-hooks we call useRouteError()
- * unconditionally at the top of the component and then preserve the previous
- * effect/reporting/rendering behavior.
- */
-export function RouteErrorBoundary(): JSX.Element {
-  // Call the hook unconditionally (fixes rules-of-hooks warnings)
+import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
+import { useEffect } from 'react';
+import { errorReporter } from '@/lib/errorReporter';
+import { ErrorBoundary as ErrorFallback } from '@/components/ErrorBoundary';
+export function RouteErrorBoundary() {
+  // Call the hook unconditionally at the top level to fix the lint error.
   const error = useRouteError();
   useEffect(() => {
-    // Preserve previous reporting behavior: attempt to report route errors,
-    // route error responses, and fallback to stringification for unexpected shapes.
-    try {
+    if (error) {
+      let errorMessage = 'Unknown route error';
+      let errorStack = '';
       if (isRouteErrorResponse(error)) {
-        // route error responses often include useful metadata (status, data)
-        errorReporter.report(error);
-        return;
+        errorMessage = `Route Error ${error.status}: ${error.statusText}`;
+        if (error.data) {
+          errorMessage += ` - ${JSON.stringify(error.data)}`;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+        errorStack = error.stack || '';
+      } else if (typeof error === 'string') {
+        errorMessage = error;
+      } else {
+        errorMessage = JSON.stringify(error);
       }
-      if (error instanceof Error) {
-        errorReporter.report(error);
-        return;
-      }
-      // For non-Error, non-RouteErrorResponse values, coerce to an Error for reporting.
-      errorReporter.report(new Error(String(error)));
-    } catch (reportErr) {
-      // Intentionally swallow any reporting errors to avoid further rendering issues.
-      // Keep behavior identical to previous implementation (no side-effects beyond reporting).
-      // eslint-disable-next-line no-console
-      console.debug("RouteErrorBoundary: error reporting failed", reportErr);
+      errorReporter.report({
+        message: errorMessage,
+        stack: errorStack,
+        url: window.location.href,
+        timestamp: new Date().toISOString(),
+        source: 'react-router',
+        error: error,
+        level: "error",
+      });
     }
   }, [error]);
-  // Preserve original rendering logic for route errors vs normal errors.
+  // Render error UI using shared ErrorFallback component
   if (isRouteErrorResponse(error)) {
-    // Keep exact handling for RouteErrorResponse.
-    // Pass through the original error object so ErrorFallback can render status/details.
-    return <ErrorFallback error={error} />;
+    return (
+      <ErrorFallback
+        title={`${error.status} ${error.statusText}`}
+        message="Sorry, an error occurred while loading this page."
+        error={error.data ? { message: JSON.stringify(error.data, null, 2) } : error}
+        statusMessage="Navigation error detected"
+      />
+    );
   }
-  // For other error shapes, surface them to the fallback as-is.
-  return <ErrorFallback error={error} />;
+  return (
+    <ErrorFallback
+      title="Unexpected Error"
+      message="An unexpected error occurred while loading this page."
+      error={error}
+      statusMessage="Routing error detected"
+    />
+  );
 }
