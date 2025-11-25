@@ -14,7 +14,25 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
+      workbox: {
+        runtimeCaching: [{
+          urlPattern: /^\/api\/.*/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: {
+              maxAgeSeconds: 86400 // 1 day
+            }
+          }
+        }]
+      },
+      includeAssets: [
+        'favicon.ico',
+        'apple-touch-icon.png',
+        'mask-icon.svg',
+        'pwa-192x192.png',
+        'pwa-512x512.png'
+      ],
       manifest: {
         name: 'SuiteWaste OS',
         short_name: 'SuiteWaste',
@@ -25,6 +43,8 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
+          // Placeholder PNGs; manual addition required as binaries cannot be generated.
+          // Using vite.svg as a fallback for now.
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
@@ -60,4 +80,7 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    ssr: false,
+  }
 })
