@@ -4,7 +4,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
@@ -199,6 +199,7 @@ const MarketplaceApp: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('apps.marketplace.scanWithCamera')}</DialogTitle>
+            <DialogDescription>{t('apps.marketplace.cameraDescription', { defaultValue: 'Use your camera to capture the item for listing.' })}</DialogDescription>
           </DialogHeader>
           <video ref={videoRef} autoPlay playsInline className="w-full h-auto rounded-md bg-black"></video>
           <canvas ref={canvasRef} className="hidden"></canvas>
@@ -211,6 +212,7 @@ const MarketplaceApp: React.FC = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t('apps.marketplace.transactionHistory')}</DialogTitle>
+            <DialogDescription>{t('apps.marketplace.blockchainDescription', { defaultValue: 'View the transaction history visualization for this item.' })}</DialogDescription>
           </DialogHeader>
           <BlockchainVisualization />
         </DialogContent>

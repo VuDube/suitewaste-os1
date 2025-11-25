@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { PlayCircle, CheckCircle, BookOpen, Award, Trophy } from 'lucide-react';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { useTranslation } from 'react-i18next';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import QuizView, { QuizQuestion } from './QuizView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -184,17 +184,18 @@ const TrainingApp: React.FC = () => {
         </div>
       </ScrollArea>
       <Dialog open={!!activeCourse} onOpenChange={(isOpen) => !isOpen && setActiveCourse(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{activeCourse?.title}</DialogTitle>
-          </DialogHeader>
-          {activeCourse && (
-            <QuizView
-              questions={activeCourse.quiz}
-              onComplete={handleQuizComplete}
-            />
-          )}
-        </DialogContent>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>{activeCourse?.title}</DialogTitle>
+              <DialogDescription>{t('apps.training.quizDescription', { defaultValue: 'Answer the quiz to complete the course.' })}</DialogDescription>
+            </DialogHeader>
+            {activeCourse && (
+              <QuizView
+                questions={activeCourse.quiz}
+                onComplete={handleQuizComplete}
+              />
+            )}
+          </DialogContent>
       </Dialog>
     </>
   );
