@@ -3,7 +3,6 @@ import react from '@vitejs/plugin-react'
 import path from "path"
 import { cloudflare } from "@cloudflare/vite-plugin"
 import { VitePWA } from 'vite-plugin-pwa'
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     react(),
@@ -14,37 +13,18 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
-      workbox: {
-        runtimeCaching: [{
-          urlPattern: /^\/api\/.*/,
-          handler: 'NetworkFirst',
-          options: {
-            cacheName: 'api-cache',
-            expiration: {
-              maxAgeSeconds: 86400 // 1 day
-            }
-          }
-        }]
-      },
-      includeAssets: [
-        'favicon.ico',
-        'apple-touch-icon.png',
-        'mask-icon.svg',
-        'pwa-192x192.png',
-        'pwa-512x512.png'
-      ],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'SuiteWaste OS',
         short_name: 'SuiteWaste',
-        description: 'A desktop-style PWA for the waste management sector.',
+        description: 'A desktop-style PWA for the waste management sector, featuring a multi-window OS interface and AI-powered workflow applications.',
         theme_color: '#2E7D32',
         background_color: '#ffffff',
         display: 'standalone',
         scope: '/',
         start_url: '/',
         icons: [
-          // Placeholder PNGs; manual addition required as binaries cannot be generated.
-          // Using vite.svg as a fallback for now.
+          // Placeholder PNGs; manual addition required as binaries cannot be generated—use vite.svg fallback if needed.
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
@@ -62,7 +42,19 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ]
-      }
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        runtimeCaching: [{
+          urlPattern: /^\/api\/.*/,
+          handler: 'NetworkFirst',
+          options: {
+            cacheName: 'api-cache',
+            expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 }
+          }
+        }]
+      },
+      strategies: 'generateSW'
     })
   ],
   resolve: {
@@ -81,6 +73,6 @@ export default defineConfig({
     },
   },
   build: {
-    ssr: false,
+    ssr: false
   }
 })
