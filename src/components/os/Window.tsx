@@ -1,5 +1,5 @@
 import React from 'react';
-import { Rnd } from 'react-rnd';
+import { Rnd } from 'react-rnd/lib/index.js';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minimize2, Square, Minus } from 'lucide-react';
 import { useDesktopStore, WindowInstance } from '@/stores/useDesktopStore';
