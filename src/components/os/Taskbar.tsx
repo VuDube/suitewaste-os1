@@ -28,27 +28,36 @@ const Taskbar: React.FC = () => {
   };
   const windowsOnCurrentDesktop = windows.filter(w => w.desktopId === currentDesktopId);
   return (
-    <footer className="absolute bottom-0 left-0 right-0 h-12 bg-background/50 backdrop-blur-xl border-t border-border/50 z-[99999] flex items-center justify-between px-2">
+    <motion.footer
+      layoutId="taskbar"
+      role="navigation"
+      aria-label="Taskbar"
+      className="absolute bottom-0 left-0 right-0 h-12 bg-background/50 backdrop-blur-xl border-t border-border/50 z-[99999] flex items-center justify-between px-2"
+    >
       <div className="flex items-center gap-2">
         <StartMenu />
       </div>
       <div className="flex items-center gap-2">
         <DesktopSwitcher />
         <div className="flex items-center gap-2">
-          {windowsOnCurrentDesktop.map((win) => (
-            <motion.button
-              key={win.id}
-              layout
-              onClick={() => handleTaskbarIconClick(win.id, win.state)}
-              className={cn(
-                'flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors relative',
-                activeWindowId === win.id && win.state !== 'minimized' ? 'bg-accent' : ''
-              )}
-              title={win.title}
-            >
-              <win.icon className="w-5 h-5" />
-              <span className="text-sm hidden md:inline">{win.title}</span>
-              <AnimatePresence>
+          <AnimatePresence>
+            {windowsOnCurrentDesktop.map((win) => (
+              <motion.button
+                key={win.id}
+                layout
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
+                onClick={() => handleTaskbarIconClick(win.id, win.state)}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors relative',
+                  activeWindowId === win.id && win.state !== 'minimized' ? 'bg-accent' : ''
+                )}
+                title={win.title}
+                aria-pressed={activeWindowId === win.id && win.state !== 'minimized'}
+              >
+                <win.icon className="w-5 h-5" />
+                <span className="text-sm hidden md:inline">{win.title}</span>
                 {win.state !== 'minimized' && (
                   <motion.div
                     layoutId={`active_indicator_${win.id}`}
@@ -58,13 +67,13 @@ const Taskbar: React.FC = () => {
                     )}
                   />
                 )}
-              </AnimatePresence>
-            </motion.button>
-          ))}
+              </motion.button>
+            ))}
+          </AnimatePresence>
         </div>
       </div>
       <SystemTray />
-    </footer>
+    </motion.footer>
   );
 };
 export default Taskbar;
