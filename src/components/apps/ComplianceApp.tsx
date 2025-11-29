@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -6,31 +6,17 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { FileText, ShieldCheck, Bot, Loader2 } from 'lucide-react';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { useTranslation } from 'react-i18next';
+import { useComplianceChecklist, useUpdateChecklistItem, useComplianceAudit } from '@/lib/api';
+import { Skeleton } from '@/components/ui/skeleton';
 const APP_ID = 'compliance';
-const initialComplianceItems = [
-  { id: 'c1', label: 'Waste Carrier License up-to-date', checked: true },
-  { id: 'c2', label: 'Vehicle maintenance logs complete', checked: true },
-  { id: 'c3', label: 'Driver training records verified', checked: false },
-  { id: 'c4', label: 'Waste transfer notes correctly filed', checked: true },
-  { id: 'c5', label: 'Health & Safety audit passed', checked: false },
-];
 const ComplianceApp: React.FC = () => {
   const { t } = useTranslation();
-  const [isAuditing, setIsAuditing] = useState(false);
-  const appState = useDesktopStore((state) => state.appsState[APP_ID]);
-  const updateAppState = useDesktopStore((state) => state.updateAppState);
   const addNotification = useDesktopStore((state) => state.addNotification);
-  useEffect(() => {
-    if (!appState) {
-      updateAppState(APP_ID, { items: initialComplianceItems });
-    }
-  }, [appState, updateAppState]);
+  const { data: complianceItems, isLoading: isLoadingChecklist } = useComplianceChecklist();
+  const updateMutation = useUpdateChecklistItem();
+  const auditMutation = useComplianceAudit();
   const handleCheckChange = (itemId: string, checked: boolean) => {
-    if (!appState?.items) return;
-    const updatedItems = appState.items.map((item: any) =>
-      item.id === itemId ? { ...item, checked } : item
-    );
-    updateAppState(APP_ID, { items: updatedItems });
+    updateMutation.mutate({ id: itemId, checked });
   };
   const handleGenerateReport = () => {
     addNotification({
@@ -41,31 +27,17 @@ const ComplianceApp: React.FC = () => {
     });
   };
   const handleAiAudit = () => {
-    setIsAuditing(true);
-    setTimeout(() => {
-      if (!appState?.items) {
-        setIsAuditing(false);
-        return;
+    auditMutation.mutate(undefined, {
+      onSuccess: () => {
+        addNotification({
+          appId: APP_ID,
+          icon: ShieldCheck,
+          title: t('apps.compliance.aiAuditCompleteTitle'),
+          message: t('apps.compliance.aiAuditCompleteMessage', { count: complianceItems?.filter(i => !i.checked).length || 0 }),
+        });
       }
-      let issuesResolved = 0;
-      const auditedItems = appState.items.map((item: any) => {
-        if (!item.checked) {
-          issuesResolved++;
-          return { ...item, checked: true };
-        }
-        return item;
-      });
-      updateAppState(APP_ID, { items: auditedItems });
-      addNotification({
-        appId: APP_ID,
-        icon: ShieldCheck,
-        title: t('apps.compliance.aiAuditCompleteTitle'),
-        message: t('apps.compliance.aiAuditCompleteMessage', { count: issuesResolved }),
-      });
-      setIsAuditing(false);
-    }, 2000);
+    });
   };
-  const complianceItems = appState?.items || [];
   return (
     <ScrollArea className="h-full">
       <div className="p-8">
@@ -77,8 +49,8 @@ const ComplianceApp: React.FC = () => {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t('apps.compliance.checklist')}</CardTitle>
-              <Button variant="outline" size="sm" onClick={handleAiAudit} disabled={isAuditing}>
-                {isAuditing ? (
+              <Button variant="outline" size="sm" onClick={handleAiAudit} disabled={auditMutation.isPending}>
+                {auditMutation.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Bot className="mr-2 h-4 w-4" />
@@ -87,21 +59,31 @@ const ComplianceApp: React.FC = () => {
               </Button>
             </CardHeader>
             <CardContent className="space-y-4">
-              {complianceItems.map((item: any) => (
-                <div key={item.id} className="flex items-center space-x-2">
-                  <Checkbox
-                    id={item.id}
-                    checked={item.checked}
-                    onCheckedChange={(checked) => handleCheckChange(item.id, !!checked)}
-                  />
-                  <label
-                    htmlFor={item.id}
-                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                  >
-                    {item.label}
-                  </label>
-                </div>
-              ))}
+              {isLoadingChecklist ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-center space-x-2">
+                    <Skeleton className="h-4 w-4" />
+                    <Skeleton className="h-4 w-64" />
+                  </div>
+                ))
+              ) : (
+                complianceItems?.map((item) => (
+                  <div key={item.id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={item.id}
+                      checked={item.checked}
+                      onCheckedChange={(checked) => handleCheckChange(item.id, !!checked)}
+                      disabled={updateMutation.isPending}
+                    />
+                    <label
+                      htmlFor={item.id}
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      {item.label}
+                    </label>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
           <Card>

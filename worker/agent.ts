@@ -24,13 +24,12 @@ export class ChatAgent extends Agent<Env, ChatState> {
   /**
    * Initialize chat handler when agent starts
    */
-  async onStart(): Promise<void> {
-    this.chatHandler = new ChatHandler(
+  async onStart(): Promise<void> {    this.chatHandler = new ChatHandler(
       this.env.CF_AI_BASE_URL ,
       this.env.CF_AI_API_KEY,
-      this.state.model
+      this.state.model,
+      { SERPAPI_KEY: this.env.SERPAPI_KEY }
     );
-    
     console.log(`ChatAgent ${this.name} initialized with session ${this.state.sessionId}`);
   }
 

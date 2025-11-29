@@ -13,11 +13,13 @@ export class ChatHandler {
   private client: OpenAI;
   private model: string;
 
-  constructor(aiGatewayUrl: string, apiKey: string, model: string) {
+  private env: { SERPAPI_KEY?: string };
+  constructor(aiGatewayUrl: string, apiKey: string, model: string, env: { SERPAPI_KEY?: string }) {
     this.client = new OpenAI({ 
       baseURL: aiGatewayUrl,
       apiKey: apiKey
     });
+    this.env = env;
     console.log("BASE URL", aiGatewayUrl);
     this.model = model;
   }
@@ -109,11 +111,9 @@ export class ChatHandler {
       }
     } catch (error) {
       console.error('Stream processing error:', error);
-      throw new Error('Stream processing failed');
-    }
-    
+      throw new Error('Stream processing failed');    }
     if (accumulatedToolCalls.length > 0) {
-      const executedTools = await this.executeToolCalls(accumulatedToolCalls);
+      const executedTools = await this.executeToolCalls(accumulatedToolCalls, this.env);
       const finalResponse = await this.generateToolResponse(message, conversationHistory, accumulatedToolCalls, executedTools);
       return { content: finalResponse, toolCalls: executedTools };
     }
@@ -138,7 +138,7 @@ export class ChatHandler {
       };
     }
 
-    const toolCalls = await this.executeToolCalls(responseMessage.tool_calls as ChatCompletionMessageFunctionToolCall[]);
+    const toolCalls = await this.executeToolCalls(responseMessage.tool_calls as ChatCompletionMessageFunctionToolCall[], this.env);
     const finalResponse = await this.generateToolResponse(
       message, 
       conversationHistory, 
@@ -152,12 +152,12 @@ export class ChatHandler {
   /**
    * Execute all tool calls from OpenAI response
    */
-  private async executeToolCalls(openAiToolCalls: ChatCompletionMessageFunctionToolCall[]): Promise<ToolCall[]> {
+  private async executeToolCalls(openAiToolCalls: ChatCompletionMessageFunctionToolCall[], env: { SERPAPI_KEY?: string }): Promise<ToolCall[]> {
     return Promise.all(
       openAiToolCalls.map(async (tc) => {
         try {
           const args = tc.function.arguments ? JSON.parse(tc.function.arguments) : {};
-          const result = await executeTool(tc.function.name, args);
+          const result = await executeTool(tc.function.name, args, env);
           return {
             id: tc.id,
             name: tc.function.name,

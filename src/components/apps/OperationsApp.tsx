@@ -6,8 +6,9 @@ import { useTranslation } from 'react-i18next';
 import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor, TouchSensor, useDroppable, UniqueIdentifier } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
-// Mock data
+import { GripVertical, Loader2 } from 'lucide-react';
+import { useOperationsRoutes } from '@/lib/api';
+// Mock data for tasks until API is ready
 const initialTasks: Record<string, { id: string; content: string }[]> = {
   unassigned: [
     { id: 'T001', content: 'Special pickup at Sandton City' },
@@ -18,17 +19,7 @@ const initialTasks: Record<string, { id: string; content: string }[]> = {
   R002: [],
   R003: [{ id: 'T005', content: 'Industrial park clearing' }],
 };
-const routes = [
-  { id: 'R001', name: 'Route 1 (Sandton)' },
-  { id: 'R002', name: 'Route 2 (Midrand)' },
-  { id: 'R003', name: 'Route 3 (Soweto)' },
-];
 const joburgCenter: L.LatLngExpression = [-26.2041, 28.0473];
-const vehiclePositions: Record<string, L.LatLngExpression> = {
-  R001: [-26.1, 28.05],
-  R002: [-26.0, 28.08],
-  R003: [-26.25, 28.0],
-};
 const truckIcon = new L.Icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
@@ -64,6 +55,7 @@ const TaskColumn = ({ id, title, tasks }: { id: string; title: string; tasks: { 
 const OperationsApp: React.FC = () => {
   const { t } = useTranslation();
   const [tasks, setTasks] = useState(initialTasks);
+  const { data: routesData, isLoading: isLoadingRoutes } = useOperationsRoutes();
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
@@ -73,10 +65,22 @@ const OperationsApp: React.FC = () => {
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(mapInstance.current);
-      routes.forEach(route => {
-        L.marker(vehiclePositions[route.id], { icon: truckIcon })
-          .addTo(mapInstance.current!)
-          .bindPopup(route.name);
+    }
+    if (mapInstance.current && routesData) {
+      // Clear existing markers
+      mapInstance.current.eachLayer(layer => {
+        if (layer instanceof L.Marker) {
+          mapInstance.current?.removeLayer(layer);
+        }
+      });
+      // Add new markers
+      routesData.forEach(route => {
+        if (route.positions && route.positions.length > 0) {
+          const pos: L.LatLngExpression = [route.positions[0].lat, route.positions[0].lng];
+          L.marker(pos, { icon: truckIcon })
+            .addTo(mapInstance.current!)
+            .bindPopup(route.name);
+        }
       });
     }
     return () => {
@@ -85,7 +89,7 @@ const OperationsApp: React.FC = () => {
         mapInstance.current = null;
       }
     };
-  }, []);
+  }, [routesData]);
   const findContainer = (id: UniqueIdentifier) => {
     const idStr = String(id);
     if (idStr in tasks) return idStr;
@@ -106,14 +110,11 @@ const OperationsApp: React.FC = () => {
       const overItems = newTasks[overContainer];
       const activeIndex = activeItems.findIndex(item => item.id === activeId);
       if (activeContainer === overContainer) {
-        // Reordering in same column
         const overIndex = overItems.findIndex(item => item.id === overId);
         const [movedItem] = activeItems.splice(activeIndex, 1);
         activeItems.splice(overIndex, 0, movedItem);
       } else {
-        // Moving to a different column
         const [movedItem] = activeItems.splice(activeIndex, 1);
-        // Check if dropping on a column or an item in a column
         const overIsContainer = overId in newTasks;
         if (overIsContainer) {
           newTasks[overId].push(movedItem);
@@ -128,6 +129,7 @@ const OperationsApp: React.FC = () => {
   return (
     <div className="h-full flex flex-col">
       <div className="flex-[2] bg-muted relative">
+        {isLoadingRoutes && <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>}
         <div ref={mapRef} className="h-full w-full" />
       </div>
       <div className="flex-[1] border-t p-4">
@@ -135,8 +137,8 @@ const OperationsApp: React.FC = () => {
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="flex gap-4 h-[calc(100%-48px)] overflow-x-auto">
             <TaskColumn id="unassigned" title={t('apps.operations.unassignedTasks')} tasks={tasks.unassigned} />
-            {routes.map(route => (
-              <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id]} />
+            {routesData?.map(route => (
+              <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id] || []} />
             ))}
           </div>
         </DndContext>
