@@ -7,39 +7,41 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useDesktopStore } from '@/stores/useDesktopStore';
-import { CreditCard, QrCode } from 'lucide-react';
+import { CreditCard, QrCode, AlertCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
-const mockTransactions = [
-  { id: 'T001', date: '2023-10-26', amount: 'R 1,500.00', status: 'Completed' },
-  { id: 'T002', date: '2023-10-25', amount: 'R 850.00', status: 'Completed' },
-  { id: 'T003', date: '2023-10-24', amount: 'R 2,200.00', status: 'Pending' },
-  { id: 'T004', date: '2023-10-23', amount: 'R 500.00', status: 'Failed' },
-];
+import { usePaymentsTransactions, useCreatePayment } from '@/lib/api';
+import { Skeleton } from '@/components/ui/skeleton';
 const PaymentsApp: React.FC = () => {
   const { t } = useTranslation();
   const addNotification = useDesktopStore((state) => state.addNotification);
-  const [transactions, setTransactions] = useState(mockTransactions);
+  const { data: transactions, isLoading: isLoadingTransactions } = usePaymentsTransactions();
+  const createPaymentMutation = useCreatePayment();
   const [recipient, setRecipient] = useState('');
   const [amount, setAmount] = useState('');
   const [isQrDialogOpen, setIsQrDialogOpen] = useState(false);
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipient || !amount) return;
-    const newTransaction = {
-      id: `T${String(transactions.length + 1).padStart(3, '0')}`,
-      date: new Date().toISOString().split('T')[0],
-      amount: `R ${parseFloat(amount).toFixed(2)}`,
-      status: 'Completed',
-    };
-    setTransactions([newTransaction, ...transactions]);
-    setRecipient('');
-    setAmount('');
-    addNotification({
-      appId: 'payments',
-      icon: CreditCard,
-      title: 'Payment Successful',
-      message: `Successfully sent ${newTransaction.amount} to ${recipient}.`,
+    createPaymentMutation.mutate({ recipient, amount }, {
+      onSuccess: (newTransaction) => {
+        setRecipient('');
+        setAmount('');
+        addNotification({
+          appId: 'payments',
+          icon: CreditCard,
+          title: 'Payment Successful',
+          message: `Successfully sent ${newTransaction.amount} to ${recipient}.`,
+        });
+      },
+      onError: (error) => {
+        addNotification({
+          appId: 'payments',
+          icon: AlertCircle,
+          title: 'Payment Failed',
+          message: error.message,
+        });
+      }
     });
   };
   const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`Amount: R ${amount}, Recipient: ${recipient}`)}`;
@@ -60,25 +62,14 @@ const PaymentsApp: React.FC = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="recipient">{t('apps.payments.recipient')}</Label>
-                    <Input
-                      id="recipient"
-                      placeholder="Account Number or Phone"
-                      value={recipient}
-                      onChange={(e) => setRecipient(e.target.value)}
-                    />
+                    <Input id="recipient" placeholder="Account Number or Phone" value={recipient} onChange={(e) => setRecipient(e.target.value)} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="amount">{t('apps.payments.amount')}</Label>
-                    <Input
-                      id="amount"
-                      type="number"
-                      placeholder="0.00"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
-                    />
+                    <Input id="amount" type="number" placeholder="0.00" value={amount} onChange={(e) => setAmount(e.target.value)} />
                   </div>
                   <div className="flex gap-2">
-                    <Button type="submit" className="flex-1">{t('apps.payments.sendPayment')}</Button>
+                    <Button type="submit" className="flex-1" disabled={createPaymentMutation.isPending}>{t('apps.payments.sendPayment')}</Button>
                     <Dialog open={isQrDialogOpen} onOpenChange={setIsQrDialogOpen}>
                       <DialogTrigger asChild>
                         <Button type="button" variant="outline" disabled={!recipient || !amount}>
@@ -115,32 +106,31 @@ const PaymentsApp: React.FC = () => {
                       <TableHead>Status</TableHead>
                     </TableRow>
                   </TableHeader>
-                  <AnimatePresence>
-                    <TableBody>
-                      {transactions.map((tx) => (
-                        <motion.tr
-                          key={tx.id}
-                          layout
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, x: -20 }}
-                          transition={{ duration: 0.3 }}
-                          className="hover:bg-muted/50"
-                        >
-                          <TableCell>{tx.id}</TableCell>
-                          <TableCell>{tx.date}</TableCell>
-                          <TableCell>{tx.amount}</TableCell>
-                          <TableCell>
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              tx.status === 'Completed' ? 'bg-green-100 text-green-800' :
-                              tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }`}>{tx.status}</span>
-                          </TableCell>
-                        </motion.tr>
-                      ))}
-                    </TableBody>
-                  </AnimatePresence>
+                  <TableBody>
+                    {isLoadingTransactions ? (
+                      Array.from({ length: 4 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell><Skeleton className="h-4 w-12" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                          <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                          <TableCell><Skeleton className="h-6 w-24 rounded-full" /></TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <AnimatePresence>
+                        {transactions?.map((tx) => (
+                          <motion.tr key={tx.id} layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="hover:bg-muted/50">
+                            <TableCell>{tx.id}</TableCell>
+                            <TableCell>{tx.date}</TableCell>
+                            <TableCell>{tx.amount}</TableCell>
+                            <TableCell>
+                              <span className={`px-2 py-1 text-xs rounded-full ${tx.status === 'Completed' ? 'bg-green-100 text-green-800' : tx.status === 'Pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>{tx.status}</span>
+                            </TableCell>
+                          </motion.tr>
+                        ))}
+                      </AnimatePresence>
+                    )}
+                  </TableBody>
                 </Table>
               </CardContent>
             </Card>
