@@ -6,7 +6,7 @@ import { PlayCircle, CheckCircle, BookOpen, Award, Trophy, Loader2 } from 'lucid
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import QuizView, { QuizQuestion } from './QuizView';
+import QuizView from './QuizView';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -43,7 +43,7 @@ const TrainingApp: React.FC = () => {
     if (activeCourse) {
       const passingScore = total * 0.75;
       const passed = score >= passingScore;
-      updateProgressMutation.mutate({ courseId: activeCourse.id, completed: passed, score }, {
+      updateProgressMutation.mutate({ courseId: activeCourse.id, completed: passed, score: score / total }, {
         onSuccess: () => {
           if (passed) {
             addNotification({

@@ -23,6 +23,8 @@ class AppErrorBoundary extends React.Component<Props, State> {
       errorBoundary: true,
       error: error,
       level: "error",
+      url: window.location.href,
+      timestamp: new Date().toISOString(),
     });
   }
   render() {
