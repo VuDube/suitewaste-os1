@@ -43,7 +43,7 @@ const TrainingApp: React.FC = () => {
     if (activeCourse) {
       const passingScore = total * 0.75;
       const passed = score >= passingScore;
-      updateProgressMutation.mutate({ courseId: activeCourse.id, completed: passed, score: score / total }, {
+      updateProgressMutation.mutate({ courseId: activeCourse.id, completed: passed, score: score / total, started: true }, {
         onSuccess: () => {
           if (passed) {
             addNotification({
@@ -91,7 +91,10 @@ const TrainingApp: React.FC = () => {
                         {course.completed ? (
                           <span className="flex items-center gap-1 text-green-600 text-sm font-medium"><CheckCircle size={16} /> {t('apps.training.completed')}</span>
                         ) : (
-                          <Button size="sm" onClick={() => handleStartCourse(course.id)} disabled={updateProgressMutation.isPending}><PlayCircle size={16} className="mr-2" />{course.started ? t('apps.training.resume') : t('apps.training.start')}</Button>
+                          <Button size="sm" onClick={() => handleStartCourse(course.id)} disabled={updateProgressMutation.isPending}>
+                            {updateProgressMutation.isPending && updateProgressMutation.variables?.courseId === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle size={16} className="mr-2" />}
+                            {course.started ? t('apps.training.resume') : t('apps.training.start')}
+                          </Button>
                         )}
                       </div>
                     </CardContent>

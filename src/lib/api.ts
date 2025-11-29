@@ -1,4 +1,4 @@
-import { QueryClient, useQuery, useMutation, UseQueryResult, UseMutationResult } from '@tanstack/react-query';
+import { QueryClient, useQuery, useMutation, UseQueryResult, UseMutationResult, QueryKey } from '@tanstack/react-query';
 import { z } from 'zod';
 import {
   operationsRoutesSchema,
@@ -21,12 +21,19 @@ export const queryClient = new QueryClient({
     queries: {
       retry: 2,
       refetchOnWindowFocus: true,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
 });
 const API_BASE_URL = '/api/v1';
-// Generic fetcher
-async function apiFetch<T>(endpoint: string, schema: z.ZodSchema<T>, options: RequestInit = {}): Promise<T> {
+// Generic fetcher with offline fallback
+async function apiFetch<T>(endpoint: string, schema: z.ZodSchema<T>, options: RequestInit = {}, queryKey: QueryKey): Promise<T> {
+  if (!navigator.onLine) {
+    const cachedData = queryClient.getQueryData<T>(queryKey);
+    if (cachedData) return cachedData;
+    // For arrays, return empty array. For objects, this might need adjustment.
+    return schema.safeParse([]).success ? [] as T : {} as T;
+  }
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -45,54 +52,53 @@ async function apiFetch<T>(endpoint: string, schema: z.ZodSchema<T>, options: Re
 export const useOperationsRoutes = (): UseQueryResult<OperationsRoute[], Error> =>
   useQuery({
     queryKey: ['routes'],
-    queryFn: () => apiFetch('/operations/routes', operationsRoutesSchema),
+    queryFn: ({ queryKey }) => apiFetch('/operations/routes', operationsRoutesSchema, {}, queryKey),
   });
 export const useSuggestRoute = (): UseMutationResult<void, Error, { tasks: any[] }> =>
   useMutation({
-    mutationFn: (data) => apiFetch('/operations/routes/suggest', z.void(), { method: 'POST', body: JSON.stringify(data) }),
+    mutationFn: (data) => apiFetch('/operations/routes/suggest', z.void(), { method: 'POST', body: JSON.stringify(data) }, ['routes']),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['routes'] }),
   });
 // Compliance App
 export const useComplianceChecklist = (): UseQueryResult<ComplianceItem[], Error> =>
   useQuery({
     queryKey: ['checklist'],
-    queryFn: () => apiFetch('/compliance/checklist', complianceChecklistSchema),
+    queryFn: ({ queryKey }) => apiFetch('/compliance/checklist', complianceChecklistSchema, {}, queryKey),
   });
 export const useUpdateChecklistItem = (): UseMutationResult<ComplianceItem, Error, { id: string; checked: boolean }> =>
   useMutation({
-    mutationFn: (item) => apiFetch('/compliance/checklist', z.any(), { method: 'PUT', body: JSON.stringify(item) }),
+    mutationFn: (item) => apiFetch('/compliance/checklist', z.any(), { method: 'PUT', body: JSON.stringify(item) }, ['checklist']),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['checklist'] }),
   });
 export const useComplianceAudit = (): UseMutationResult<void, Error, void> =>
   useMutation({
-    mutationFn: () => apiFetch('/compliance/audit', z.void(), { method: 'POST' }),
+    mutationFn: () => apiFetch('/compliance/audit', z.void(), { method: 'POST' }, ['checklist']),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['checklist'] }),
   });
 // Payments App
 export const usePaymentsTransactions = (): UseQueryResult<PaymentTransaction[], Error> =>
   useQuery({
     queryKey: ['transactions'],
-    queryFn: () => apiFetch('/payments/transactions', paymentsTransactionsSchema),
+    queryFn: ({ queryKey }) => apiFetch('/payments/transactions', paymentsTransactionsSchema, {}, queryKey),
   });
 export const useCreatePayment = (): UseMutationResult<PaymentTransaction, Error, { recipient: string; amount: string }> =>
   useMutation({
-    mutationFn: (payment) => apiFetch('/payments/transactions', z.any(), { method: 'POST', body: JSON.stringify(payment) }),
+    mutationFn: (payment) => apiFetch('/payments/transactions', z.any(), { method: 'POST', body: JSON.stringify(payment) }, ['transactions']),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['transactions'] }),
   });
 // Marketplace App
 export const useMarketplaceListings = (): UseQueryResult<MarketplaceListing[], Error> =>
   useQuery({
     queryKey: ['listings'],
-    queryFn: () => apiFetch('/marketplace/listings', marketplaceListingsSchema),
+    queryFn: ({ queryKey }) => apiFetch('/marketplace/listings', marketplaceListingsSchema, {}, queryKey),
   });
 export const useClassifyImage = (): UseMutationResult<ImageClassificationResult, Error, { image: string }> =>
   useMutation({
-    mutationFn: ({ image }) => apiFetch('/marketplace/classify', imageClassificationResultSchema, { method: 'POST', body: JSON.stringify({ image }) }),
+    mutationFn: ({ image }) => apiFetch('/marketplace/classify', imageClassificationResultSchema, { method: 'POST', body: JSON.stringify({ image }) }, ['listings']),
   });
 export const useCreateListing = (): UseMutationResult<MarketplaceListing, Error, FormData> =>
   useMutation({
     mutationFn: (formData) => {
-      // Special fetch for FormData
       return fetch(`${API_BASE_URL}/marketplace/listings`, {
         method: 'POST',
         body: formData,
@@ -108,15 +114,15 @@ export const useCreateListing = (): UseMutationResult<MarketplaceListing, Error,
 export const useTrainingProgress = (): UseQueryResult<TrainingProgress[], Error> =>
   useQuery({
     queryKey: ['trainingProgress'],
-    queryFn: () => apiFetch('/training/progress', trainingProgressSchema),
+    queryFn: ({ queryKey }) => apiFetch('/training/progress', trainingProgressSchema, {}, queryKey),
   });
 export const useUpdateProgress = (): UseMutationResult<TrainingProgress, Error, Partial<TrainingProgress> & { courseId: number }> =>
   useMutation({
-    mutationFn: (progress) => apiFetch(`/training/progress/${progress.courseId}`, z.any(), { method: 'PUT', body: JSON.stringify(progress) }),
+    mutationFn: (progress) => apiFetch(`/training/progress/${progress.courseId}`, z.any(), { method: 'PUT', body: JSON.stringify(progress) }, ['trainingProgress']),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['trainingProgress'] }),
   });
 export const useTrainingLeaderboard = (): UseQueryResult<LeaderboardEntry[], Error> =>
   useQuery({
     queryKey: ['leaderboard'],
-    queryFn: () => apiFetch('/training/leaderboard', leaderboardSchema),
+    queryFn: ({ queryKey }) => apiFetch('/training/leaderboard', leaderboardSchema, {}, queryKey),
   });

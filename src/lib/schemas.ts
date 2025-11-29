@@ -47,6 +47,7 @@ export const trainingProgressSchema = z.array(z.object({
   duration: z.string(),
   completed: z.boolean(),
   started: z.boolean(),
+  score: z.number().optional(),
   quiz: z.array(z.object({
     question: z.string(),
     options: z.array(z.string()),
