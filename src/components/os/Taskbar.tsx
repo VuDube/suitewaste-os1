@@ -32,7 +32,7 @@ const Taskbar: React.FC = () => {
       layoutId="taskbar"
       role="navigation"
       aria-label="Taskbar"
-      className="absolute bottom-0 left-0 right-0 h-12 bg-background/50 backdrop-blur-xl border-t border-border/50 z-[99999] flex items-center justify-between px-2"
+      className="absolute bottom-0 left-0 right-0 h-12 md:h-12 min-h-[56px] bg-background/50 backdrop-blur-xl border-t border-border/50 z-[99999] flex items-center justify-between px-2"
     >
       <div className="flex items-center gap-2">
         <StartMenu />
@@ -40,8 +40,8 @@ const Taskbar: React.FC = () => {
       <div className="flex-1 flex justify-center">
         <div className="flex items-center gap-2">
           <DesktopSwitcher />
-          <div className="flex items-center gap-2">
-            <AnimatePresence>
+          <div className="flex items-center gap-1 flex-wrap">
+            <AnimatePresence mode="wait">
               {windowsOnCurrentDesktop.map((win) => (
                 <motion.button
                   key={win.id}
