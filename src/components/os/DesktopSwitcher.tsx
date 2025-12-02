@@ -18,7 +18,7 @@ const DesktopSwitcher: React.FC = () => {
     }))
   );
   return (
-    <div className="flex items-center gap-1 bg-secondary p-1 rounded-md">
+    <div className="flex items-center gap-1 bg-secondary p-1 rounded-md flex-wrap">
       <AnimatePresence>
         {desktops.map((desktop) => (
           <motion.div
@@ -35,7 +35,7 @@ const DesktopSwitcher: React.FC = () => {
               size="sm"
               onClick={() => setCurrentDesktop(desktop.id)}
               className={cn(
-                'px-3 transition-all duration-200',
+                'px-3 transition-all duration-200 min-w-[48px]',
                 currentDesktopId === desktop.id ? 'bg-background text-foreground shadow-sm' : 'hover:bg-background/50'
               )}
             >

@@ -6,13 +6,13 @@ import { Env, getAppController } from "./core-utils";
 import OpenAI from "openai";
 import { AppController } from "./app-controller";
 // Define a typed context for our middleware
-interface EnvContext extends Context {
-    env: Env;
-    var: {
+type AppContext = {
+    Variables: {
         userId: string;
         controller: DurableObjectStub<AppController>;
-    }
-}
+    };
+    Bindings: Env;
+};
 const initialUserData = {
     routes: [
         { id: 'R001', name: 'Route 1 (Sandton)', positions: [{ lat: -26.1, lng: 28.05 }] },
@@ -71,7 +71,7 @@ export function coreRoutes(app: Hono<{ Bindings: Env }>) {
     });
 }
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-    const api = new Hono<{ Bindings: Env }>();
+    const api = new Hono<AppContext>();
     api.use('*', async (c, next) => {
         const userId = c.req.header('user-id') || 'default-user';
         const controller = getAppController(c.env);
@@ -80,20 +80,20 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         await next();
     });
     // Operations
-    api.get('/operations/routes', async (c: Context) => {
-        const state = await getUserState(c.get('controller'), c.get('userId'));
+    api.get('/operations/routes', async (c) => {
+        const state = await getUserState(c.var.controller, c.var.userId);
         return c.json({ success: true, data: state.routes || [] });
     });
     api.post('/operations/routes/suggest', (c) => c.json({ success: true, data: { jobId: '123' } }));
     // Compliance
-    api.get('/compliance/checklist', async (c: Context) => {
-        const state = await getUserState(c.get('controller'), c.get('userId'));
+    api.get('/compliance/checklist', async (c) => {
+        const state = await getUserState(c.var.controller, c.var.userId);
         return c.json({ success: true, data: state.checklist || [] });
     });
-    api.put('/compliance/checklist', async (c: Context) => {
+    api.put('/compliance/checklist', async (c) => {
         const { id, checked } = await c.req.json<{ id: string; checked: boolean }>();
-        const controller = c.get('controller');
-        const userId = c.get('userId');
+        const controller = c.var.controller;
+        const userId = c.var.userId;
         const state = await getUserState(controller, userId);
         const updatedChecklist = state.checklist.map((item: any) => item.id === id ? { ...item, checked } : item);
         await controller.setState(userId, { ...state, checklist: updatedChecklist });
@@ -101,14 +101,14 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     api.post('/compliance/audit', (c) => c.json({ success: true, data: null }));
     // Payments
-    api.get('/payments/transactions', async (c: Context) => {
-        const state = await getUserState(c.get('controller'), c.get('userId'));
+    api.get('/payments/transactions', async (c) => {
+        const state = await getUserState(c.var.controller, c.var.userId);
         return c.json({ success: true, data: state.transactions || [] });
     });
-    api.post('/payments/transactions', async (c: Context) => {
+    api.post('/payments/transactions', async (c) => {
         const { amount } = await c.req.json<{ amount: string }>();
-        const controller = c.get('controller');
-        const userId = c.get('userId');
+        const controller = c.var.controller;
+        const userId = c.var.userId;
         const state = await getUserState(controller, userId);
         const newTransaction = { id: `T${Date.now()}`, date: new Date().toISOString().split('T')[0], amount: `R ${amount}`, status: 'Completed' };
         const updatedTransactions = [...state.transactions, newTransaction];
@@ -116,24 +116,24 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         return c.json({ success: true, data: newTransaction });
     });
     // Marketplace
-    api.get('/marketplace/listings', async (c: Context) => {
-        const state = await getUserState(c.get('controller'), c.get('userId'));
+    api.get('/marketplace/listings', async (c) => {
+        const state = await getUserState(c.var.controller, c.var.userId);
         return c.json({ success: true, data: state.listings || [] });
     });
-    api.post('/marketplace/listings', async (c: Context) => {
+    api.post('/marketplace/listings', async (c) => {
         const formData = await c.req.formData();
         const name = formData.get('name') as string;
         const price = formData.get('price') as string;
         const category = formData.get('category') as string;
-        const controller = c.get('controller');
-        const userId = c.get('userId');
+        const controller = c.var.controller;
+        const userId = c.var.userId;
         const state = await getUserState(controller, userId);
         const newListing = { id: Date.now(), name, price: `R ${price}`, category, image: '/ewaste/placeholder.jpg' };
         const updatedListings = [...state.listings, newListing];
         await controller.setState(userId, { ...state, listings: updatedListings });
         return c.json({ success: true, data: newListing });
     });
-    api.post('/marketplace/classify', async (c: EnvContext) => {
+    api.post('/marketplace/classify', async (c) => {
         try {
             const { image } = await c.req.json<{ image: string }>();
             if (!c.env.CF_AI_BASE_URL || !c.env.CF_AI_API_KEY) {
@@ -159,15 +159,15 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         }
     });
     // Training
-    api.get('/training/progress', async (c: Context) => {
-        const state = await getUserState(c.get('controller'), c.get('userId'));
+    api.get('/training/progress', async (c) => {
+        const state = await getUserState(c.var.controller, c.var.userId);
         return c.json({ success: true, data: state.trainingProgress || [] });
     });
-    api.put('/training/progress/:courseId', async (c: Context) => {
+    api.put('/training/progress/:courseId', async (c) => {
         const courseId = parseInt(c.req.param('courseId'));
         const body = await c.req.json();
-        const controller = c.get('controller');
-        const userId = c.get('userId');
+        const controller = c.var.controller;
+        const userId = c.var.userId;
         const state = await getUserState(controller, userId);
         let updatedCourse;
         const updatedProgress = state.trainingProgress.map((p: any) => {
@@ -180,8 +180,8 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         await controller.setState(userId, { ...state, trainingProgress: updatedProgress });
         return c.json({ success: true, data: updatedCourse });
     });
-    api.get('/training/leaderboard', async (c: Context) => {
-        const state = await getUserState(c.get('controller'), c.get('userId'));
+    api.get('/training/leaderboard', async (c) => {
+        const state = await getUserState(c.var.controller, c.var.userId);
         return c.json({ success: true, data: state.leaderboard || [] });
     });
     app.route('/api/v1', api);

@@ -30,13 +30,13 @@ export class DeviceManager extends EventEmitter {
     };
   }
   public async detectDevices() {
-    if (navigator.usb) {
+    if ('usb' in navigator && navigator.usb) {
       try {
         const devices = await navigator.usb.getDevices();
         devices.forEach(d => this.emit('device', { id: d.serialNumber, type: 'usb', status: 'connected', connectedAt: Date.now() }));
       } catch (e) { console.warn('Could not get USB devices', e); }
     }
-    if (navigator.geolocation) {
+    if ('geolocation' in navigator && navigator.geolocation) {
       navigator.geolocation.watchPosition(p => this.emit('gps', { lat: p.coords.latitude, lng: p.coords.longitude }));
     }
   }
