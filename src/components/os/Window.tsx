@@ -135,14 +135,14 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
         style={{ zIndex: win.zIndex }}
         disableDragging={isMaximized}
         enableResizing={!isMaximized}
-        className={cn('flex', isMobile ? '!w-full !h-full !transform-none' : '')}
+        className={cn('flex window-print-container', isMobile ? '!w-full !h-full !transform-none' : '')}
       >
         {renderContent()}
       </RndComponent>
     ) : (
       <div
         style={{ zIndex: win.zIndex, width: win.size.width, height: win.size.height, transform: `translate(${win.position.x}px, ${win.position.y}px)` }}
-        className={cn('flex absolute', isMobile ? '!w-full !h-full !transform-none' : '')}
+        className={cn('flex absolute window-print-container', isMobile ? '!w-full !h-full !transform-none' : '')}
       >
         {renderContent()}
       </div>
