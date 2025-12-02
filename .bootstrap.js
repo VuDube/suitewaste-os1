@@ -90,7 +90,8 @@ function runSetupCommands() {
     "bun install i18next-http-backend react-leaflet",
     "bun install i18next react-i18next i18next-browser-languagedetector leaflet",
     "bun add vite-plugin-pwa@^1.1.0",
-    "bun add react-rnd@10.5.2 --verbose"
+    "bun add react-rnd@10.5.2 --verbose",
+    "bun add i18next react-i18next"
 ];
     
     if (commands.length === 0) {
