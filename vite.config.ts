@@ -3,9 +3,11 @@ import react from '@vitejs/plugin-react'
 import path from "path"
 import { cloudflare } from "@cloudflare/vite-plugin"
 import { VitePWA } from 'vite-plugin-pwa'
+import { splitVendorChunkPlugin } from 'vite'
 export default defineConfig({
   plugins: [
     react(),
+    splitVendorChunkPlugin(),
     cloudflare({
       proxy: {
         '/api': 'http://localhost:8788',
@@ -24,7 +26,6 @@ export default defineConfig({
         scope: '/',
         start_url: '/',
         icons: [
-          // Placeholder PNGs; manual addition required as binaries cannot be generated—use vite.svg fallback if needed.
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
@@ -50,7 +51,15 @@ export default defineConfig({
           handler: 'NetworkFirst',
           options: {
             cacheName: 'api-cache',
-            expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 }
+            expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
+            // You can add plugins here if needed, e.g., for background sync
+            // plugins: [
+            //   {
+            //     cacheDidUpdate: async ({cacheName, request, oldResponse, newResponse}) => {
+            //       console.log(`${cacheName} updated for ${request.url}`);
+            //     }
+            //   }
+            // ]
           }
         }]
       },
@@ -73,6 +82,17 @@ export default defineConfig({
     },
   },
   build: {
-    ssr: false
+    sourcemap: true,
+    ssr: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'framer-vendor': ['framer-motion'],
+          'ui-vendor': ['@radix-ui/react-slot', 'class-variance-authority', 'clsx', 'tailwind-merge'],
+          'leaflet-vendor': ['leaflet', 'react-leaflet'],
+        }
+      }
+    }
   }
 })
