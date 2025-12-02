@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { DeviceInfo } from '@/lib/hardware';
 export type WindowState = 'minimized' | 'maximized' | 'normal';
 export interface WindowInstance {
   id: string;
@@ -34,6 +35,9 @@ interface DesktopState {
   currentDesktopId: string;
   nextDesktopId: number;
   appsState: Record<string, any>;
+  hardwareState: {
+    devices: Map<string, DeviceInfo>;
+  };
 }
 interface DesktopActions {
   openApp: (appId: string, meta?: { title?: string; icon?: React.ComponentType<{ className?: string }> }) => void;
@@ -50,37 +54,39 @@ interface DesktopActions {
   removeDesktop: (desktopId: string) => void;
   setCurrentDesktop: (desktopId: string) => void;
   updateAppState: (appId: string, data: any) => void;
+  updateHardwareState: (devices: Map<string, DeviceInfo>) => void;
+  notifyHardwareEvent: (event: string, deviceId: string) => void;
 }
 const initialState: DesktopState = {
   windows: [],
   notifications: [],
   activeWindowId: null,
   nextZIndex: 100,
-  wallpaper: '', // Default to empty to trigger canvas wallpaper
+  wallpaper: '',
   desktops: [{ id: '1', name: 'os.desktop.1' }],
   currentDesktopId: '1',
   nextDesktopId: 2,
   appsState: {},
+  hardwareState: {
+    devices: new Map(),
+  },
 };
 export const useDesktopStore = create<DesktopState & DesktopActions>()(
   immer((set, get) => ({
     ...initialState,
-    openApp: (appId, meta?: { title?: string; icon?: React.ComponentType<{ className?: string }> }) => {
+    openApp: (appId, meta) => {
       const currentDesktopId = get().currentDesktopId;
       const existingWindow = get().windows.find((w) => w.appId === appId && w.desktopId === currentDesktopId);
       if (existingWindow) {
         get().focusWindow(existingWindow.id);
-        if (existingWindow.state === 'minimized') {
-          get().setWindowState(existingWindow.id, 'normal');
-        }
+        if (existingWindow.state === 'minimized') get().setWindowState(existingWindow.id, 'normal');
         return;
       }
-      const defaultIcon: React.ComponentType<{ className?: string }> = () => null;
       const newWindow: WindowInstance = {
         id: `win_${crypto.randomUUID()}`,
         appId: appId,
         title: meta?.title ?? appId,
-        icon: meta?.icon ?? defaultIcon,
+        icon: meta?.icon ?? (() => null),
         position: { x: Math.random() * 200 + 50, y: Math.random() * 100 + 50 },
         size: { width: 800, height: 600 },
         zIndex: get().nextZIndex,
@@ -93,128 +99,83 @@ export const useDesktopStore = create<DesktopState & DesktopActions>()(
         state.nextZIndex += 1;
       });
     },
-    closeApp: (windowId) => {
-      set((state) => {
-        state.windows = state.windows.filter((w) => w.id !== windowId);
-        if (state.activeWindowId === windowId) {
-          const windowsOnCurrentDesktop = state.windows.filter(w => w.desktopId === state.currentDesktopId);
-          state.activeWindowId = windowsOnCurrentDesktop.length > 0 ? windowsOnCurrentDesktop[windowsOnCurrentDesktop.length - 1].id : null;
-        }
-      });
-    },
-    focusWindow: (windowId) => {
-      // avoid calling set at all if the window doesn't exist
-      const exists = get().windows.find((w) => w.id === windowId);
-      if (!exists) return;
-      set((state) => {
-        const targetWindow = state.windows.find((w) => w.id === windowId);
-        if (!targetWindow) return;
-        // If already topmost, still ensure activeWindowId is set
-        if (targetWindow.zIndex === state.nextZIndex - 1) {
-          state.activeWindowId = windowId;
-          return;
-        }
-        targetWindow.zIndex = state.nextZIndex;
-        state.nextZIndex += 1;
+    closeApp: (windowId) => set((state) => {
+      state.windows = state.windows.filter((w) => w.id !== windowId);
+      if (state.activeWindowId === windowId) {
+        const windowsOnCurrentDesktop = state.windows.filter(w => w.desktopId === state.currentDesktopId);
+        state.activeWindowId = windowsOnCurrentDesktop.length > 0 ? windowsOnCurrentDesktop.sort((a, b) => a.zIndex - b.zIndex).pop()!.id : null;
+      }
+    }),
+    focusWindow: (windowId) => set((state) => {
+      const targetWindow = state.windows.find((w) => w.id === windowId);
+      if (!targetWindow || targetWindow.zIndex === state.nextZIndex - 1) {
         state.activeWindowId = windowId;
-      });
-    },
-    setWindowState: (windowId, windowState) => {
-      set((state) => {
-        const window = state.windows.find((w) => w.id === windowId);
-        if (window) {
-          window.state = windowState;
-          if (windowState !== 'minimized') {
-            // Bring window to front and set activeWindowId atomically to avoid nested updates
-            if (window.zIndex !== state.nextZIndex - 1) {
-              window.zIndex = state.nextZIndex;
-              state.nextZIndex += 1;
-            }
-            state.activeWindowId = windowId;
+        return;
+      }
+      targetWindow.zIndex = state.nextZIndex;
+      state.nextZIndex += 1;
+      state.activeWindowId = windowId;
+    }),
+    setWindowState: (windowId, windowState) => set((state) => {
+      const window = state.windows.find((w) => w.id === windowId);
+      if (window) {
+        window.state = windowState;
+        if (windowState !== 'minimized') {
+          if (window.zIndex !== state.nextZIndex - 1) {
+            window.zIndex = state.nextZIndex;
+            state.nextZIndex += 1;
           }
+          state.activeWindowId = windowId;
         }
-      });
-    },
-    updateWindowPosition: (windowId, position) => {
-      set((state) => {
-        const window = state.windows.find((w) => w.id === windowId);
-        if (window) {
-          window.position = position;
-        }
-      });
-    },
-    updateWindowSize: (windowId, size) => {
-      set((state) => {
-        const window = state.windows.find((w) => w.id === windowId);
-        if (window) {
-          window.size = size;
-        }
-      });
-    },
-    addNotification: (notification) => {
-      const newNotification: Notification = {
-        ...notification,
-        id: `notif_${crypto.randomUUID()}`,
-        timestamp: Date.now(),
-      };
-      set((state) => {
-        state.notifications.unshift(newNotification);
-        if (state.notifications.length > 20) {
-          state.notifications.pop();
-        }
-      });
-    },
-    removeNotification: (notificationId) => {
-      set((state) => {
-        state.notifications = state.notifications.filter((n) => n.id !== notificationId);
-      });
-    },
-    clearNotifications: () => {
-      set((state) => {
-        state.notifications = [];
-      });
-    },
-    setWallpaper: (wallpaperUrl) => {
-      set((state) => {
-        state.wallpaper = wallpaperUrl;
-      });
-    },
-    addDesktop: () => {
-      set((state) => {
-        const newDesktopId = state.nextDesktopId.toString();
-        state.desktops.push({ id: newDesktopId, name: `os.desktop.${newDesktopId}` });
-        state.nextDesktopId += 1;
-        state.currentDesktopId = newDesktopId;
-      });
-    },
+      }
+    }),
+    updateWindowPosition: (windowId, position) => set((state) => {
+      const window = state.windows.find((w) => w.id === windowId);
+      if (window) window.position = position;
+    }),
+    updateWindowSize: (windowId, size) => set((state) => {
+      const window = state.windows.find((w) => w.id === windowId);
+      if (window) window.size = size;
+    }),
+    addNotification: (notification) => set((state) => {
+      state.notifications.unshift({ ...notification, id: `notif_${crypto.randomUUID()}`, timestamp: Date.now() });
+      if (state.notifications.length > 20) state.notifications.pop();
+    }),
+    removeNotification: (notificationId) => set((state) => {
+      state.notifications = state.notifications.filter((n) => n.id !== notificationId);
+    }),
+    clearNotifications: () => set((state) => { state.notifications = []; }),
+    setWallpaper: (wallpaperUrl) => set({ wallpaper: wallpaperUrl }),
+    addDesktop: () => set((state) => {
+      const newDesktopId = state.nextDesktopId.toString();
+      state.desktops.push({ id: newDesktopId, name: `os.desktop.${newDesktopId}` });
+      state.nextDesktopId += 1;
+      state.currentDesktopId = newDesktopId;
+    }),
     removeDesktop: (desktopId) => {
       if (get().desktops.length <= 1) return;
       set((state) => {
-        const desktopToRemove = state.desktops.find(d => d.id === desktopId);
-        if (!desktopToRemove) return;
-        const remainingDesktops = state.desktops.filter((d) => d.id !== desktopId);
-        const fallbackDesktopId = remainingDesktops[0].id;
-        // Move windows from the removed desktop to the fallback desktop
-        state.windows.forEach(win => {
-          if (win.desktopId === desktopId) {
-            win.desktopId = fallbackDesktopId;
-          }
-        });
-        state.desktops = remainingDesktops;
-        if (state.currentDesktopId === desktopId) {
-          state.currentDesktopId = fallbackDesktopId;
-        }
+        const fallbackId = state.desktops.find(d => d.id !== desktopId)!.id;
+        state.windows.forEach(w => { if (w.desktopId === desktopId) w.desktopId = fallbackId; });
+        state.desktops = state.desktops.filter((d) => d.id !== desktopId);
+        if (state.currentDesktopId === desktopId) state.currentDesktopId = fallbackId;
       });
     },
-    setCurrentDesktop: (desktopId) => {
-      set((state) => {
-        state.currentDesktopId = desktopId;
-        state.activeWindowId = null;
-      });
-    },
-    updateAppState: (appId, data) => {
-      set((state) => {
-        state.appsState[appId] = { ...state.appsState[appId], ...data };
+    setCurrentDesktop: (desktopId) => set({ currentDesktopId: desktopId, activeWindowId: null }),
+    updateAppState: (appId, data) => set((state) => {
+      state.appsState[appId] = { ...state.appsState[appId], ...data };
+    }),
+    updateHardwareState: (devices) => set((state) => {
+      state.hardwareState.devices = devices;
+    }),
+    notifyHardwareEvent: (event, deviceId) => {
+      // This is a placeholder for more complex logic.
+      // For now, it just adds a generic notification.
+      get().addNotification({
+        appId: 'system',
+        icon: () => null, // Placeholder
+        title: `Hardware Event: ${event}`,
+        message: `Device: ${deviceId}`,
       });
     },
   }))

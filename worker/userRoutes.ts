@@ -1,18 +1,18 @@
-import { Hono, Next } from "hono";
+import { Hono, Next, Context } from "hono";
 import { getAgentByName } from 'agents';
 import { ChatAgent } from './agent';
 import { API_RESPONSES } from './config';
 import { Env, getAppController } from "./core-utils";
 import OpenAI from "openai";
 import { AppController } from "./app-controller";
-import { Context } from "hono";
 // Define a typed context for our middleware
-type AppContext = Context<{
-    Variables: {
+interface EnvContext extends Context {
+    env: Env;
+    var: {
         userId: string;
         controller: DurableObjectStub<AppController>;
     }
-}>;
+}
 const initialUserData = {
     routes: [
         { id: 'R001', name: 'Route 1 (Sandton)', positions: [{ lat: -26.1, lng: 28.05 }] },
@@ -52,9 +52,6 @@ async function getUserState(controller: DurableObjectStub<AppController>, userId
     }
     return state;
 }
-/**
- * DO NOT MODIFY THIS FUNCTION. Only for your reference.
- */
 export function coreRoutes(app: Hono<{ Bindings: Env }>) {
     app.all('/api/chat/:sessionId/*', async (c) => {
         try {
@@ -74,8 +71,7 @@ export function coreRoutes(app: Hono<{ Bindings: Env }>) {
     });
 }
 export function userRoutes(app: Hono<{ Bindings: Env }>) {
-    const api = new Hono<{ Bindings: Env, Variables: AppContext['Variables'] }>();
-    // Middleware to get user ID and controller
+    const api = new Hono<{ Bindings: Env }>();
     api.use('*', async (c, next) => {
         const userId = c.req.header('user-id') || 'default-user';
         const controller = getAppController(c.env);
@@ -84,17 +80,17 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         await next();
     });
     // Operations
-    api.get('/operations/routes', async (c) => {
+    api.get('/operations/routes', async (c: Context) => {
         const state = await getUserState(c.get('controller'), c.get('userId'));
         return c.json({ success: true, data: state.routes || [] });
     });
     api.post('/operations/routes/suggest', (c) => c.json({ success: true, data: { jobId: '123' } }));
     // Compliance
-    api.get('/compliance/checklist', async (c) => {
+    api.get('/compliance/checklist', async (c: Context) => {
         const state = await getUserState(c.get('controller'), c.get('userId'));
         return c.json({ success: true, data: state.checklist || [] });
     });
-    api.put('/compliance/checklist', async (c) => {
+    api.put('/compliance/checklist', async (c: Context) => {
         const { id, checked } = await c.req.json<{ id: string; checked: boolean }>();
         const controller = c.get('controller');
         const userId = c.get('userId');
@@ -105,11 +101,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
     });
     api.post('/compliance/audit', (c) => c.json({ success: true, data: null }));
     // Payments
-    api.get('/payments/transactions', async (c) => {
+    api.get('/payments/transactions', async (c: Context) => {
         const state = await getUserState(c.get('controller'), c.get('userId'));
         return c.json({ success: true, data: state.transactions || [] });
     });
-    api.post('/payments/transactions', async (c) => {
+    api.post('/payments/transactions', async (c: Context) => {
         const { amount } = await c.req.json<{ amount: string }>();
         const controller = c.get('controller');
         const userId = c.get('userId');
@@ -120,11 +116,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         return c.json({ success: true, data: newTransaction });
     });
     // Marketplace
-    api.get('/marketplace/listings', async (c) => {
+    api.get('/marketplace/listings', async (c: Context) => {
         const state = await getUserState(c.get('controller'), c.get('userId'));
         return c.json({ success: true, data: state.listings || [] });
     });
-    api.post('/marketplace/listings', async (c) => {
+    api.post('/marketplace/listings', async (c: Context) => {
         const formData = await c.req.formData();
         const name = formData.get('name') as string;
         const price = formData.get('price') as string;
@@ -137,7 +133,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         await controller.setState(userId, { ...state, listings: updatedListings });
         return c.json({ success: true, data: newListing });
     });
-    api.post('/marketplace/classify', async (c) => {
+    api.post('/marketplace/classify', async (c: EnvContext) => {
         try {
             const { image } = await c.req.json<{ image: string }>();
             if (!c.env.CF_AI_BASE_URL || !c.env.CF_AI_API_KEY) {
@@ -163,11 +159,11 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         }
     });
     // Training
-    api.get('/training/progress', async (c) => {
+    api.get('/training/progress', async (c: Context) => {
         const state = await getUserState(c.get('controller'), c.get('userId'));
         return c.json({ success: true, data: state.trainingProgress || [] });
     });
-    api.put('/training/progress/:courseId', async (c) => {
+    api.put('/training/progress/:courseId', async (c: Context) => {
         const courseId = parseInt(c.req.param('courseId'));
         const body = await c.req.json();
         const controller = c.get('controller');
@@ -184,7 +180,7 @@ export function userRoutes(app: Hono<{ Bindings: Env }>) {
         await controller.setState(userId, { ...state, trainingProgress: updatedProgress });
         return c.json({ success: true, data: updatedCourse });
     });
-    api.get('/training/leaderboard', async (c) => {
+    api.get('/training/leaderboard', async (c: Context) => {
         const state = await getUserState(c.get('controller'), c.get('userId'));
         return c.json({ success: true, data: state.leaderboard || [] });
     });
