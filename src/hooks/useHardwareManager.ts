@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { create } from 'zustand';
 import { DeviceManager, DeviceInfo } from '@/lib/hardware';
 import { useDesktopStore } from '@/stores/useDesktopStore';
@@ -21,7 +21,6 @@ const useHardwareStore = create<HardwareState>((set, get) => ({
       set(state => {
         const newDevices = new Map(state.devices);
         newDevices.set(device.id, device);
-        // Directly call the store's action
         useDesktopStore.getState().updateHardwareState(newDevices);
         return { devices: newDevices };
       });
@@ -42,16 +41,10 @@ const useHardwareStore = create<HardwareState>((set, get) => ({
   },
 }));
 export const useHardwareManager = () => {
-  const devices = useHardwareStore((state) => state.devices);
-  const status = useHardwareStore((state) => state.status);
-  const queueAction = useHardwareStore((state) => state.queueAction);
-  const init = useHardwareStore((state) => state.init);
+  const { devices, status, queueAction, init } = useHardwareStore();
   useEffect(() => {
     init();
   }, [init]);
-  const isConnected = useCallback(
-    (id: string) => devices.get(id)?.status === 'connected',
-    [devices]
-  );
+  const isConnected = (id: string) => devices.get(id)?.status === 'connected';
   return { devices, status, queueAction, isConnected };
 };

@@ -1,82 +1,44 @@
-import React, { Component, ErrorInfo, ReactNode } from "react";
-import { errorReporter } from "@/lib/errorReporter";
-import { ErrorFallback } from "./ErrorFallback";
-
-interface Props {
-  children: ReactNode;
-  fallback?: (
-    error: Error,
-    errorInfo: ErrorInfo,
-    retry: () => void
-  ) => ReactNode;
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { AlertTriangle } from 'lucide-react';
+interface ErrorFallbackProps {
+  title?: string;
+  message?: string;
+  error?: any;
+  statusMessage?: string;
 }
-
-interface State {
-  hasError: boolean;
-  error: Error | null;
-  errorInfo: ErrorInfo | null;
-}
-
-export class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-    error: null,
-    errorInfo: null,
-  };
-
-  public static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error, errorInfo: null };
-  }
-
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Update state with error info
-    this.setState({ errorInfo });
-
-    // Report error to backend
-    errorReporter.report({
-      message: error.message,
-      stack: error.stack || "",
-      componentStack: errorInfo.componentStack,
-      errorBoundary: true,
-      errorBoundaryProps: {
-        componentName: this.constructor.name,
-      },
-      url: window.location.href,
-      timestamp: new Date().toISOString(),
-      level: "error",
-    });
-  }
-
-  private retry = () => {
-    this.setState({ hasError: false, error: null, errorInfo: null });
-    // Reload the page to ensure clean state
+export function ErrorBoundary({
+  title = "Something went wrong",
+  message = "We're sorry, but an unexpected error occurred. Please try again.",
+  error,
+  statusMessage,
+}: ErrorFallbackProps) {
+  const refreshPage = () => {
     window.location.reload();
   };
-
-  private goHome = () => {
-    window.location.href = "/";
-  };
-
-  public render() {
-    if (this.state.hasError && this.state.error) {
-      if (this.props.fallback) {
-        return this.props.fallback(
-          this.state.error,
-          this.state.errorInfo!,
-          this.retry
-        );
-      }
-
-      // Use shared ErrorFallback component
-      return (
-        <ErrorFallback
-          error={this.state.error}
-          onRetry={this.retry}
-          onGoHome={this.goHome}
-        />
-      );
-    }
-
-    return this.props.children;
-  }
+  return (
+    <div className="flex items-center justify-center min-h-screen bg-background text-foreground p-4" role="alert">
+      <div className="max-w-lg w-full text-center space-y-6">
+        <div className="flex justify-center">
+          <AlertTriangle className="w-16 h-16 text-destructive" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-destructive">{title}</h1>
+          {statusMessage && <p className="text-lg text-muted-foreground">{statusMessage}</p>}
+          <p className="text-muted-foreground">{message}</p>
+        </div>
+        {error && (
+          <details className="p-4 bg-secondary rounded-lg text-left text-sm">
+            <summary className="cursor-pointer font-medium">Error Details</summary>
+            <pre className="mt-2 whitespace-pre-wrap break-words text-muted-foreground">
+              <code>{error instanceof Error ? error.stack : JSON.stringify(error, null, 2)}</code>
+            </pre>
+          </details>
+        )}
+        <Button onClick={refreshPage} size="lg">
+          Reload Page
+        </Button>
+      </div>
+    </div>
+  );
 }
