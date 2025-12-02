@@ -8,6 +8,7 @@ import { useHardwareManager } from '@/hooks/useHardwareManager';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { motion, AnimatePresence } from 'framer-motion';
 const HardwareIcon = ({ type, className }: { type: string, className?: string }) => {
   switch (type) {
     case 'printer':
@@ -22,11 +23,9 @@ const HardwareIcon = ({ type, className }: { type: string, className?: string })
   }
 };
 const SystemTray: React.FC = () => {
-  // All hooks are called unconditionally at the top level.
   const [time, setTime] = useState(new Date());
   const { t } = useTranslation();
   const notifications = useDesktopStore(useShallow((state) => state.notifications));
-  // Guard against useHardwareManager returning null during initialization or in non-browser environments.
   const hardwareManager = useHardwareManager();
   const devices = hardwareManager?.devices || new Map();
   const status = hardwareManager?.status || 'idle';
@@ -41,18 +40,31 @@ const SystemTray: React.FC = () => {
       <div className="flex items-center gap-2">
         {status === 'scanning' && <Loader2 className="h-4 w-4 animate-spin" />}
         <TooltipProvider>
-          {devices.size > 0 && Array.from(devices.values()).map(d => (
-            <Tooltip key={d.id}>
-              <TooltipTrigger asChild>
-                <button className="p-1 rounded hover:bg-accent" aria-label={t('hardware.status', { type: d.type, status: d.status })}>
-                  <HardwareIcon type={d.type} className={cn('w-4 h-4', d.status === 'error' ? 'text-destructive' : 'text-muted-foreground')} />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{d.type.toUpperCase()}: {d.status}</p>
-              </TooltipContent>
-            </Tooltip>
-          ))}
+          <AnimatePresence>
+            {devices.size > 0 && Array.from(devices.values()).map(d => (
+              <motion.div
+                key={d.id}
+                layout
+                initial={{ opacity: 0, scale: 0.5 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="p-1 rounded hover:bg-accent" aria-label={t('hardware.status', { type: d.type, status: d.status })}>
+                      <HardwareIcon type={d.type} className={cn('w-4 h-4', d.status === 'error' ? 'text-destructive' : 'text-muted-foreground')} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="font-semibold">{d.type.toUpperCase()}</p>
+                    <p>Status: {d.status}</p>
+                    {d.battery && <p>Battery: {d.battery}%</p>}
+                  </TooltipContent>
+                </Tooltip>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </TooltipProvider>
       </div>
       <div className="text-xs text-right text-foreground">
