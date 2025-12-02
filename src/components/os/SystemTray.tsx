@@ -22,10 +22,14 @@ const HardwareIcon = ({ type, className }: { type: string, className?: string })
   }
 };
 const SystemTray: React.FC = () => {
+  // All hooks are called unconditionally at the top level.
   const [time, setTime] = useState(new Date());
   const { t } = useTranslation();
   const notifications = useDesktopStore(useShallow((state) => state.notifications));
-  const { devices, status } = useHardwareManager();
+  // Guard against useHardwareManager returning null during initialization or in non-browser environments.
+  const hardwareManager = useHardwareManager();
+  const devices = hardwareManager?.devices || new Map();
+  const status = hardwareManager?.status || 'idle';
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000 * 60); // Update every minute
     return () => clearInterval(timer);
@@ -37,7 +41,7 @@ const SystemTray: React.FC = () => {
       <div className="flex items-center gap-2">
         {status === 'scanning' && <Loader2 className="h-4 w-4 animate-spin" />}
         <TooltipProvider>
-          {Array.from(devices.values()).map(d => (
+          {devices.size > 0 && Array.from(devices.values()).map(d => (
             <Tooltip key={d.id}>
               <TooltipTrigger asChild>
                 <button className="p-1 rounded hover:bg-accent" aria-label={t('hardware.status', { type: d.type, status: d.status })}>

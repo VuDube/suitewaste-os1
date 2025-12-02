@@ -72,10 +72,12 @@ This project is designed for easy deployment to Cloudflare Pages.
     bun deploy
     ```
 This command will build the frontend application and deploy both the static assets and the worker functions to your Cloudflare account.
+**Note:** The project name has been updated to 'suitewaste' (lowercase) in `wrangler.jsonc` for compatibility. Run `bun build` and `bun deploy` to verify there are no configuration validation errors and that the UI deploys successfully. Check deployment logs for successful asset uploads and worker binding.
 ## Troubleshooting
 -   **AI Assistant Not Responding:** Ensure your `CF_AI_BASE_URL` and `CF_AI_API_KEY` are correctly set in your `.dev.vars` file (for local development) or as secrets in your Cloudflare dashboard (for production). Note that there is a limit on the number of requests that can be made to the AI servers.
 -   **Web Search Tool Fails:** The web search tool requires a `SERPAPI_KEY`. Make sure it is configured.
 -   **Map Not Loading:** The Operations App map requires an internet connection to load tiles from OpenStreetMap.
+-   **Deployment Fails:** If deployment fails after the name change, double-check that the `name` in `wrangler.jsonc` is lowercase and alphanumeric. Also, ensure your Cloudflare API token has the correct permissions.
 ## Contributing
 Contributions are welcome! Please feel free to open an issue or submit a pull request.
 1.  Fork the Project
