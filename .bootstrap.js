@@ -99,7 +99,8 @@ function runSetupCommands() {
     "bun add localforage@^1.10.0",
     "bun add workbox-window@^7.1.0",
     "bun add react-webcam@^7.0.0",
-    "bun add react-qr-code@^2.0.0"
+    "bun add react-qr-code@^2.0.0",
+    "bun install i18next-browser-languagedetector"
 ];
     
     if (commands.length === 0) {
