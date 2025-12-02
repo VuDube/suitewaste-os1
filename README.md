@@ -2,7 +2,7 @@
 
 A desktop-style PWA for the waste management sector, featuring a multi-window OS interface and AI-powered workflow applications.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/VuDube/suitewaste-os1)
 
 SuiteWaste OS is an advanced, desktop-style Progressive Web App (PWA) designed for the South African waste management sector. It provides a comprehensive suite of tools within a familiar, intuitive desktop environment, running entirely in the browser. The OS shell features a window manager for running multiple applications simultaneously, a taskbar for quick app switching, a start menu for launching tools, virtual desktops for organizing workflows, and a notification center for real-time alerts. Integrated applications cover core industry needs: Operations (route planning, live tracking), Compliance (AI-driven checklists), Payments (cashless transactions), an e-Waste Marketplace, interactive Training modules, and real-time Dashboards. The entire experience is powered by an integrated AI Assistant, built on Cloudflare Agents, that provides contextual help, automates tasks, and offers data-driven insights, creating a 'self-driving' frontend experience.
 
@@ -105,7 +105,7 @@ This command will build the frontend application and deploy both the static asse
 
 Alternatively, you can deploy directly from your GitHub repository using the button below.
 
-[cloudflarebutton]
+[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/VuDube/suitewaste-os1)
 
 ## Project Structure
 
