@@ -14,7 +14,7 @@ const WindowManager: React.FC<WindowManagerProps> = ({ windows }) => {
         if (!App) return null;
         return (
           <Window key={win.id} {...win}>
-            <AppWrapper>
+            <AppWrapper windowId={win.id}>
               <App />
             </AppWrapper>
           </Window>
