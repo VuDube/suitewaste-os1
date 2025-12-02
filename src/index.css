@@ -61,4 +61,34 @@
     text-rendering: optimizeLegibility;
     font-family: 'Inter', sans-serif;
   }
+  /* Improve mobile touch targets */
+  @media (hover: none) and (pointer: coarse) {
+    button, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}
+/* Print-friendly styles */
+@media print {
+  /* Hide taskbar and other non-essential UI */
+  footer[role="navigation"], .z-\[99999\] {
+    display: none !important;
+  }
+  /* Ensure windows take up full page width */
+  .window-print-container {
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    transform: none !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  body {
+    overflow: visible !important;
+  }
+  #root {
+    height: auto !important;
+    overflow: visible !important;
+  }
 }
