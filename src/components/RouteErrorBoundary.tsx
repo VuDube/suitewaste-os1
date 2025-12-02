@@ -1,9 +1,8 @@
+import React, { useEffect } from 'react';
 import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
-import { useEffect } from 'react';
 import { errorReporter } from '@/lib/errorReporter';
 import { ErrorBoundary as ErrorFallback } from '@/components/ErrorBoundary';
 export function RouteErrorBoundary() {
-  // Call the hook unconditionally at the top level to fix the lint error.
   const error = useRouteError();
   useEffect(() => {
     if (error) {
@@ -33,7 +32,6 @@ export function RouteErrorBoundary() {
       });
     }
   }, [error]);
-  // Render error UI using shared ErrorFallback component
   if (isRouteErrorResponse(error)) {
     return (
       <ErrorFallback

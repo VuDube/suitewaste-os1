@@ -1,60 +1,4 @@
-/* Lightweight browser EventEmitter polyfill providing on/once/off/emit.
-   Keeps API surface compatible with Node's EventEmitter for useHardwareManager
-   (manager.on, manager.once, manager.off, manager.emit). */
-class EventEmitter {
-  private listeners: Map<string, Set<(...args: any[]) => void>> = new Map();
-
-  public on(event: string, listener: (...args: any[]) => void): this {
-    let set = this.listeners.get(event);
-    if (!set) {
-      set = new Set();
-      this.listeners.set(event, set);
-    }
-    set.add(listener);
-    return this;
-  }
-
-  public once(event: string, listener: (...args: any[]) => void): this {
-    const onceWrapper = (...args: any[]) => {
-      this.off(event, onceWrapper);
-      listener(...args);
-    };
-    // Attach original for removal checks
-    (onceWrapper as any).__original = listener;
-    return this.on(event, onceWrapper);
-  }
-
-  public off(event: string, listener?: (...args: any[]) => void): this {
-    const set = this.listeners.get(event);
-    if (!set) return this;
-    if (!listener) {
-      this.listeners.delete(event);
-      return this;
-    }
-    for (const l of Array.from(set)) {
-      if (l === listener || (l as any).__original === listener) {
-        set.delete(l);
-      }
-    }
-    if (set.size === 0) this.listeners.delete(event);
-    return this;
-  }
-
-  public emit(event: string, ...args: any[]): boolean {
-    const set = this.listeners.get(event);
-    if (!set || set.size === 0) return false;
-    // iterate over a copy to avoid issues if listeners mutate during emit
-    for (const listener of Array.from(set)) {
-      try {
-        listener(...args);
-      } catch (err) {
-        // Preserve async error behavior similar to Node by throwing on next tick
-        setTimeout(() => { throw err; }, 0);
-      }
-    }
-    return true;
-  }
-}
+import EventEmitter from 'events';
 export interface DeviceInfo {
   id: string;
   type: 'printer' | 'camera' | 'gps' | 'poe' | 'usb';
@@ -86,16 +30,13 @@ export class DeviceManager extends EventEmitter {
     };
   }
   public async detectDevices() {
-    if ('usb' in navigator && (navigator as any).usb) {
+    if (navigator.usb) {
       try {
-        const navAny = navigator as any;
-        if (navAny.usb && typeof navAny.usb.getDevices === 'function') {
-          const devices = await navAny.usb.getDevices();
-          devices.forEach((d: any) => this.emit('device', { id: d.serialNumber, type: 'usb', status: 'connected', connectedAt: Date.now() }));
-        }
+        const devices = await navigator.usb.getDevices();
+        devices.forEach(d => this.emit('device', { id: d.serialNumber, type: 'usb', status: 'connected', connectedAt: Date.now() }));
       } catch (e) { console.warn('Could not get USB devices', e); }
     }
-    if ('geolocation' in navigator && navigator.geolocation) {
+    if (navigator.geolocation) {
       navigator.geolocation.watchPosition(p => this.emit('gps', { lat: p.coords.latitude, lng: p.coords.longitude }));
     }
   }
