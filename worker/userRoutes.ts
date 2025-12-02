@@ -9,7 +9,7 @@ import { AppController } from "./app-controller";
 type AppContext = {
     Variables: {
         userId: string;
-        controller: DurableObjectStub<AppController>;
+        controller: any;
     };
     Bindings: Env;
 };
@@ -44,11 +44,11 @@ const initialUserData = {
         { rank: 3, name: 'You', points: 1200, avatar: '/avatars/03.png' },
     ]
 };
-async function getUserState(controller: DurableObjectStub<AppController>, userId: string): Promise<Record<string, any>> {
+async function getUserState(controller: any, userId: string): Promise<Record<string, any>> {
     let state = await controller.getState(userId);
     if (!state || Object.keys(state).length === 0) {
-        await controller.setState(userId, initialUserData);
-        state = initialUserData;
+        await controller.setState(userId, initialUserData as any);
+        state = initialUserData as any;
     }
     return state;
 }
