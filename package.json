@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port ${PORT:-3000}",
-    "build": "vite build",
+    "build": "tsc --noEmit && vite build",
     "lint": "eslint --cache -f json --quiet .",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port ${PORT:-4173}",
     "deploy": "bun run build && wrangler deploy",
     "cf-typegen": "wrangler types",
+    "typecheck": "tsc --noEmit",
     "prepare": "bun .bootstrap.js || true"
   },
   "dependencies": {
@@ -61,7 +62,6 @@
     "framer-motion": "^12.23.0",
     "hono": "^4.8.5",
     "i18next": "^23.11.0",
-    "i18next-browser-languagedetector": "^8.2.0",
     "immer": "^10.1.1",
     "input-otp": "^1.4.2",
     "leaflet": "^1.9.0",
@@ -72,9 +72,9 @@
     "next-themes": "^0.4.6",
     "openai": "^5.10.1",
     "pino": "^9.11.0",
-    "react": "^18.3.1",
+    "react": "^19.0.0-rc",
     "react-day-picker": "^9.8.0",
-    "react-dom": "^18.3.1",
+    "react-dom": "^19.0.0-rc",
     "react-hook-form": "^7.60.0",
     "react-hotkeys-hook": "^5.1.0",
     "react-i18next": "^14.1.0",

@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { queryClient } from '@/lib/api';
 import { useDesktopStore } from '@/stores/useDesktopStore';
-interface State {
-  hasError: boolean;
-}
+import { queryClient } from '@/lib/api';
 interface Props {
   children: React.ReactNode;
   windowId: string;
 }
-class AppErrorBoundary extends React.Component<Props, State> {
+interface State {
+  hasError: boolean;
+  error: Error | null;
+}
+class ErrorBoundaryInner extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { hasError: false, error: null };
   }
-  static getDerivedStateFromError(): State {
-    return { hasError: true };
+  static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
   }
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
     console.error("App Error Boundary Caught:", {
@@ -42,6 +42,6 @@ class AppErrorBoundary extends React.Component<Props, State> {
   }
 }
 export const AppWrapper: React.FC<Props> = ({ children, windowId }) => {
-  return <AppErrorBoundary windowId={windowId}>{children}</AppErrorBoundary>;
+  return <ErrorBoundaryInner windowId={windowId}>{children}</ErrorBoundaryInner>;
 };
 export default AppWrapper;

@@ -52,14 +52,6 @@ export default defineConfig({
           options: {
             cacheName: 'api-cache',
             expiration: { maxEntries: 50, maxAgeSeconds: 24 * 60 * 60 },
-            // You can add plugins here if needed, e.g., for background sync
-            // plugins: [
-            //   {
-            //     cacheDidUpdate: async ({cacheName, request, oldResponse, newResponse}) => {
-            //       console.log(`${cacheName} updated for ${request.url}`);
-            //     }
-            //   }
-            // ]
           }
         }]
       },
@@ -84,13 +76,23 @@ export default defineConfig({
   build: {
     sourcemap: true,
     ssr: false,
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'framer-vendor': ['framer-motion'],
-          'ui-vendor': ['@radix-ui/react-slot', 'class-variance-authority', 'clsx', 'tailwind-merge'],
-          'leaflet-vendor': ['leaflet', 'react-leaflet'],
+        manualChunks: (id: string) => {
+          if (id.includes('node_modules/react') || id.includes('node_modules/react-dom')) {
+            return 'react-vendor';
+          }
+          if (id.includes('node_modules/framer-motion')) {
+            return 'framer-vendor';
+          }
+          if (id.includes('node_modules/leaflet')) {
+            return 'leaflet-vendor';
+          }
+          if (id.includes('node_modules/@radix-ui')) {
+            return 'ui-vendor';
+          }
+          return null;
         }
       }
     }
