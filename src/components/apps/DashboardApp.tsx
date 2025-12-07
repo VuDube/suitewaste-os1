@@ -5,6 +5,7 @@ import { BarChart, LineChart, PieChart, Bar, Line, Pie, XAxis, YAxis, CartesianG
 import { ArrowUp, Recycle, Truck, AlertTriangle, Bot } from 'lucide-react';
 import { motion, Variants } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
+import { Skeleton } from '@/components/ui/skeleton';
 const kpiData = [
   { title: 'Waste Collected (Tons)', value: '1,280', change: '+12.5%', icon: Recycle },
   { title: 'Routes Completed', value: '312', change: '+5.2%', icon: Truck },
@@ -50,8 +51,24 @@ const itemVariants: Variants = {
     },
   },
 };
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="p-2 bg-background/80 backdrop-blur-sm border rounded-md shadow-lg">
+        <p className="label font-semibold">{`${label}`}</p>
+        <p className="intro text-primary">{`${payload[0].name}: ${payload[0].value} tons`}</p>
+      </div>
+    );
+  }
+  return null;
+};
 const DashboardApp: React.FC = () => {
   const { t } = useTranslation();
+  const [isLoading, setIsLoading] = React.useState(true);
+  React.useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 1000); // Simulate data loading
+    return () => clearTimeout(timer);
+  }, []);
   return (
     <ScrollArea className="h-full">
       <div className="p-8 space-y-8">
@@ -65,7 +82,12 @@ const DashboardApp: React.FC = () => {
           initial="hidden"
           animate="visible"
         >
-          {kpiData.map((kpi, index) => (
+          {isLoading ? Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader><Skeleton className="h-5 w-3/4" /></CardHeader>
+              <CardContent><Skeleton className="h-8 w-1/2" /><Skeleton className="h-4 w-1/3 mt-2" /></CardContent>
+            </Card>
+          )) : kpiData.map((kpi, index) => (
             <motion.div key={index} variants={itemVariants}>
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -92,16 +114,18 @@ const DashboardApp: React.FC = () => {
                 <CardTitle>Waste Collection Trend</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={collectionTrendData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Line type="monotone" dataKey="tons" stroke="#2E7D32" strokeWidth={2} activeDot={{ r: 8 }} />
-                  </LineChart>
-                </ResponsiveContainer>
+                {isLoading ? <Skeleton className="w-full h-[300px]" /> : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={collectionTrendData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="name" />
+                      <YAxis />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend />
+                      <Line type="monotone" dataKey="tons" name="Tons Collected" stroke="#2E7D32" strokeWidth={2} activeDot={{ r: 8 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </motion.div>
@@ -112,12 +136,19 @@ const DashboardApp: React.FC = () => {
                 <p className="text-sm text-muted-foreground">{t('apps.dashboard.aiInsightsDesc')}</p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {aiInsightsData.map((insight, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <insight.icon className={`h-5 w-5 mt-1 flex-shrink-0 ${insight.color}`} />
-                    <p className="text-sm">{insight.text}</p>
-                  </div>
-                ))}
+                {isLoading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full" />) :
+                  aiInsightsData.map((insight, index) => (
+                    <motion.div
+                      key={index}
+                      className="flex items-start gap-3"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.2 }}
+                    >
+                      <insight.icon className={`h-5 w-5 mt-1 flex-shrink-0 ${insight.color}`} />
+                      <p className="text-sm">{insight.text}</p>
+                    </motion.div>
+                  ))}
               </CardContent>
             </Card>
           </motion.div>
@@ -127,17 +158,19 @@ const DashboardApp: React.FC = () => {
                 <CardTitle>Waste Composition</CardTitle>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie data={wasteCompositionData} cx="50%" cy="50%" labelLine={false} outerRadius={100} fill="#8884d8" dataKey="value">
-                      {wasteCompositionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
+                {isLoading ? <Skeleton className="w-full h-[300px]" /> : (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie data={wasteCompositionData} cx="50%" cy="50%" labelLine={false} outerRadius={100} fill="#8884d8" dataKey="value">
+                        {wasteCompositionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                )}
               </CardContent>
             </Card>
           </motion.div>

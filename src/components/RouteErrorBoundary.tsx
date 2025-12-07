@@ -3,6 +3,9 @@ import { useRouteError, isRouteErrorResponse } from 'react-router-dom';
 import { errorReporter } from '@/lib/errorReporter';
 import { ErrorBoundary as ErrorFallback } from '@/components/ErrorBoundary';
 export function RouteErrorBoundary() {
+  // Call the hook unconditionally at the top level of the component.
+  // This component is designed to be used only in the `errorElement` prop
+  // of a route, where `useRouteError` is guaranteed to have a value.
   const error = useRouteError();
   useEffect(() => {
     if (error) {

@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
+import { formatDistanceToNow } from 'date-fns';
 const HardwareIcon = ({ type, className }: { type: string, className?: string }) => {
   switch (type) {
     case 'printer':
@@ -52,7 +53,7 @@ const SystemTray: React.FC = () => {
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button className="p-1 rounded hover:bg-accent" aria-label={t('hardware.status', { type: d.type, status: d.status })}>
+                    <button className="p-1 rounded hover:bg-accent" aria-label={`${d.type} status: ${d.status}`}>
                       <HardwareIcon type={d.type} className={cn('w-4 h-4', d.status === 'error' ? 'text-destructive' : 'text-muted-foreground')} />
                     </button>
                   </TooltipTrigger>
@@ -60,6 +61,9 @@ const SystemTray: React.FC = () => {
                     <p className="font-semibold">{d.type.toUpperCase()}</p>
                     <p>Status: {d.status}</p>
                     {d.battery && <p>Battery: {d.battery}%</p>}
+                    <p className="text-xs text-muted-foreground">
+                      Connected {formatDistanceToNow(d.connectedAt, { addSuffix: true })}
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </motion.div>
@@ -73,7 +77,7 @@ const SystemTray: React.FC = () => {
       </div>
       <Popover>
         <PopoverTrigger asChild>
-          <button className="relative p-2 rounded-md hover:bg-accent">
+          <button className="relative p-2 rounded-md hover:bg-accent" aria-label="Open notifications">
             <Bell className="w-5 h-5" />
             {notifications.length > 0 && (
               <span className="absolute top-1 right-1 flex h-3 w-3">
