@@ -13,6 +13,8 @@ SuiteWaste OS is an advanced, desktop-style Progressive Web App (PWA) designed f
     -   **Training Hub:** Access interactive and gamified learning modules with leaderboards.
     -   **Dashboards:** Visualize real-time KPI and ESG metrics.
 -   **AI-Powered Assistant:** A "self-driving" frontend experience powered by Cloudflare Agents for contextual help and task automation.
+-   **Mobile & Touch Optimized:** Fully responsive design with large touch targets, swipe gestures, and a native-app feel on mobile devices.
+-   **Offline-First:** Installable as a PWA with offline capabilities for core assets and data synchronization.
 -   **Built on Cloudflare:** Leverages Cloudflare Workers and Durable Objects for a robust, scalable, and serverless backend.
 ## Technology Stack
 -   **Frontend:** React 18, Vite, TypeScript, Tailwind CSS

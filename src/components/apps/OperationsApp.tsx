@@ -30,7 +30,7 @@ const TaskCard = ({ id, content }: { id: string; content: string }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="p-2.5 mb-2 bg-card border rounded-md shadow-sm flex items-center">
+    <div ref={setNodeRef} style={style} {...attributes} className="p-2.5 mb-2 bg-card border rounded-md shadow-sm flex items-center min-h-[44px] md:min-h-auto">
       <button {...listeners} className="cursor-grab p-1 -ml-1 mr-2 text-muted-foreground touch-none"><GripVertical size={16} /></button>
       <p className="text-sm flex-1">{content}</p>
     </div>
@@ -83,7 +83,17 @@ const OperationsApp: React.FC = () => {
         }
       });
     }
+    // Invalidate size on window resize to fix map rendering issues
+    const resizeObserver = new ResizeObserver(() => {
+      mapInstance.current?.invalidateSize();
+    });
+    if (mapRef.current) {
+      resizeObserver.observe(mapRef.current);
+    }
     return () => {
+      if (mapRef.current) {
+        resizeObserver.unobserve(mapRef.current);
+      }
       if (mapInstance.current) {
         mapInstance.current.remove();
         mapInstance.current = null;
@@ -127,15 +137,15 @@ const OperationsApp: React.FC = () => {
     });
   };
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex-[2] bg-muted relative">
+    <div className="h-full flex flex-col md:flex-row">
+      <div className="flex-1 md:flex-[2] bg-muted relative h-1/2 md:h-full">
         {isLoadingRoutes && <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>}
         <div ref={mapRef} className="h-full w-full" />
       </div>
-      <div className="flex-[1] border-t p-4">
+      <div className="flex-1 border-t md:border-t-0 md:border-l p-4 flex flex-col h-1/2 md:h-full">
         <h2 className="text-xl font-bold mb-4">{t('apps.operations.taskBoard')}</h2>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 h-[calc(100%-48px)] overflow-x-auto">
+          <div className="flex gap-4 flex-1 overflow-x-auto">
             <TaskColumn id="unassigned" title={t('apps.operations.unassignedTasks')} tasks={tasks.unassigned} />
             {routesData?.map(route => (
               <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id] || []} />

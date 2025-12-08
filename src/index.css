@@ -60,12 +60,21 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     text-rendering: optimizeLegibility;
     font-family: 'Inter', sans-serif;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  #root {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   /* Improve mobile touch targets */
   @media (hover: none) and (pointer: coarse) {
     button, [role="button"] {
       min-height: 44px;
       min-width: 44px;
+    }
+  }
+  @media (prefers-contrast: high) {
+    :root {
+      --primary: 142 71% 26%;
     }
   }
 }

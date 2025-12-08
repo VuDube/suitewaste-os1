@@ -6,6 +6,7 @@ import { Plus, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
 import { useTranslation } from 'react-i18next';
+import { useSwipeable } from 'react-swipeable';
 const DesktopSwitcher: React.FC = () => {
   const { t } = useTranslation();
   const { desktops, currentDesktopId, setCurrentDesktop, addDesktop, removeDesktop } = useDesktopStore(
@@ -17,8 +18,32 @@ const DesktopSwitcher: React.FC = () => {
       removeDesktop: state.removeDesktop,
     }))
   );
+  const getCurrentIndex = () => desktops.findIndex(d => d.id === currentDesktopId);
+  const getNextDesktopId = () => {
+    const currentIndex = getCurrentIndex();
+    if (currentIndex === -1 || currentIndex === desktops.length - 1) return null;
+    return desktops[currentIndex + 1].id;
+  };
+  const getPrevDesktopId = () => {
+    const currentIndex = getCurrentIndex();
+    if (currentIndex <= 0) return null;
+    return desktops[currentIndex - 1].id;
+  };
+  const handlers = useSwipeable({
+    onSwipedLeft: () => {
+      const nextId = getNextDesktopId();
+      if (nextId) setCurrentDesktop(nextId);
+    },
+    onSwipedRight: () => {
+      const prevId = getPrevDesktopId();
+      if (prevId) setCurrentDesktop(prevId);
+    },
+    delta: 50,
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
   return (
-    <div className="flex items-center gap-1 bg-secondary p-1 rounded-md flex-wrap">
+    <div {...handlers} className="flex items-center gap-1 bg-secondary p-1 rounded-md flex-wrap touch-pan-y">
       <AnimatePresence>
         {desktops.map((desktop) => (
           <motion.div

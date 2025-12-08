@@ -13,12 +13,12 @@ const StartMenu: React.FC = () => {
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50">
+        <Button variant="ghost" size="icon" className="text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50 min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto">
           <Leaf className="w-6 h-6" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 mb-2 p-2" side="top" align="start">
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(80px,1fr))] gap-2 md:grid-cols-4">
           {APPS.map((app, index) => (
             <motion.div
               key={app.id}

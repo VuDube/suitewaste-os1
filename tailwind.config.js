@@ -13,11 +13,12 @@ export default {
   				'Roboto',
   				'sans-serif'
   			],
-			display: [
-				'Inter',
-				'system-ui',
-				'sans-serif'
-			],
+  			display: [
+  				'Cal Sans',
+  				'Inter',
+  				'system-ui',
+  				'sans-serif'
+  			],
   			mono: [
   				'JetBrains Mono',
   				'Fira Code',
@@ -26,6 +27,7 @@ export default {
   			]
   		},
   		fontSize: {
+        'base': ['1rem', { lineHeight: '1.5' }],
   			'2xs': [
   				'0.625rem',
   				{
@@ -98,7 +100,8 @@ export default {
   			},
   			primary: {
   				DEFAULT: 'hsl(var(--primary))',
-  				foreground: 'hsl(var(--primary-foreground))'
+  				foreground: 'hsl(var(--primary-foreground))',
+          contrast: 'hsl(142 71% 26%)', // High-contrast primary
   			},
   			border: 'hsl(var(--border))',
   			ring: 'hsl(var(--ring))',

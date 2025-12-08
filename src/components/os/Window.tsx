@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minimize2, Square, Minus } from 'lucide-react';
 import { useDesktopStore, WindowInstance } from '@/stores/useDesktopStore';
@@ -19,8 +19,16 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   const activeWindowId = useDesktopStore((state) => state.activeWindowId);
   const isMobile = useIsMobile();
   const isActive = activeWindowId === id;
-  const [RndComponent, setRndComponent] = React.useState<any>(null);
-  React.useEffect(() => {
+  const [RndComponent, setRndComponent] = useState<any>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+  useEffect(() => {
     let mounted = true;
     import('react-rnd')
       .then((m) => {
@@ -51,71 +59,77 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
       action();
     }
   };
-  const renderContent = () => (
-    <AnimatePresence>
-      <motion.div
-        variants={windowVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        className={cn(
-          'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg shadow-2xl border transition-colors',
-          isActive ? 'border-primary/50' : 'border-border/50',
-          isMobile ? 'rounded-none' : 'rounded-lg'
-        )}
-        onMouseDownCapture={() => focusWindow(id)}
-      >
-        <header
-          role="button"
-          aria-roledescription="window drag handle"
+  const renderContent = () => {
+    const MotionWrapper = prefersReducedMotion ? 'div' : motion.div;
+    const motionProps = prefersReducedMotion ? {} : {
+      variants: windowVariants,
+      initial: "hidden",
+      animate: "visible",
+      exit: "exit",
+    };
+    return (
+      <AnimatePresence>
+        <MotionWrapper
+          {...motionProps}
           className={cn(
-            'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 cursor-grab active:cursor-grabbing transition-colors',
-            isActive ? 'bg-primary/10' : 'bg-secondary/50',
-            isMobile ? 'rounded-none' : 'rounded-t-lg'
+            'flex flex-col w-full h-full bg-card/80 backdrop-blur-lg shadow-2xl border transition-colors',
+            isActive ? 'border-primary/50' : 'border-border/50',
+            isMobile ? 'rounded-none' : 'rounded-lg'
           )}
-          onDoubleClick={isMobile ? undefined : handleMaximizeToggle}
+          onMouseDownCapture={() => focusWindow(id)}
         >
-          <div className="flex items-center gap-2">
-            <win.icon className="w-4 h-4 text-foreground/80" />
-            <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
-          </div>
-          <div className="flex items-center">
-            <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button onClick={() => setWindowState(id, 'minimized')} onKeyDown={(e) => handleKeyDown(e, () => setWindowState(id, 'minimized'))} aria-label={t('os.windowControls.minimize')} className="p-2 rounded hover:bg-muted">
-                    <Minus size={14} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent><p>{t('os.windowControls.minimize')}</p></TooltipContent>
-              </Tooltip>
-              {!isMobile && (
+          <header
+            role="button"
+            aria-roledescription="window drag handle"
+            className={cn(
+              'window-drag-handle flex items-center justify-between pl-3 pr-1 py-1 cursor-grab active:cursor-grabbing transition-colors',
+              isActive ? 'bg-primary/10' : 'bg-secondary/50',
+              isMobile ? 'rounded-none' : 'rounded-t-lg'
+            )}
+            onDoubleClick={isMobile ? undefined : handleMaximizeToggle}
+          >
+            <div className="flex items-center gap-2">
+              <win.icon className="w-4 h-4 text-foreground/80" />
+              <span className="text-sm font-medium text-foreground select-none">{t(win.title)}</span>
+            </div>
+            <div className="flex items-center">
+              <TooltipProvider delayDuration={300}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={handleMaximizeToggle} onKeyDown={(e) => handleKeyDown(e, handleMaximizeToggle)} aria-label={win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')} className="p-2 rounded hover:bg-muted">
-                      {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                    <button onClick={() => setWindowState(id, 'minimized')} onKeyDown={(e) => handleKeyDown(e, () => setWindowState(id, 'minimized'))} aria-label={t('os.windowControls.minimize')} className="p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
+                      <Minus size={14} />
                     </button>
                   </TooltipTrigger>
-                  <TooltipContent><p>{win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')}</p></TooltipContent>
+                  <TooltipContent><p>{t('os.windowControls.minimize')}</p></TooltipContent>
                 </Tooltip>
-              )}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button onClick={() => closeApp(id)} onKeyDown={(e) => handleKeyDown(e, () => closeApp(id))} aria-label={t('os.windowControls.close')} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground">
-                    <X size={14} />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent><p>{t('os.windowControls.close')}</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+                {!isMobile && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button onClick={handleMaximizeToggle} onKeyDown={(e) => handleKeyDown(e, handleMaximizeToggle)} aria-label={win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')} className="p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
+                        {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>{win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')}</p></TooltipContent>
+                  </Tooltip>
+                )}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button onClick={() => closeApp(id)} onKeyDown={(e) => handleKeyDown(e, () => closeApp(id))} aria-label={t('os.windowControls.close')} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
+                      <X size={14} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>{t('os.windowControls.close')}</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </header>
+          <div className="flex-1 overflow-hidden bg-background/50">
+            {children}
           </div>
-        </header>
-        <div className="flex-1 overflow-hidden bg-background/50">
-          {children}
-        </div>
-      </motion.div>
-    </AnimatePresence>
-  );
+        </MotionWrapper>
+      </AnimatePresence>
+    );
+  };
   return (
     RndComponent ? (
       <RndComponent

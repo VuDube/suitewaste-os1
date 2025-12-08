@@ -87,9 +87,15 @@ export class DeviceManager extends EventEmitter {
   public async detectDevices() {
     if ('usb' in navigator && (navigator as any).usb && typeof (navigator as any).usb.getDevices === 'function') {
       try {
+        // This can throw a SecurityError if the page is not served over HTTPS
+        // or if the user has not granted permission.
         const devices = await (navigator as any).usb.getDevices();
         devices.forEach((d: any) => this.emit('device', { id: d.serialNumber, type: 'usb', status: 'connected', connectedAt: Date.now() }));
-      } catch (e) { console.warn('Could not get USB devices. Access may have been denied.', e); }
+      } catch (e) {
+        // This is an expected warning in many environments (e.g., HTTP, iframes, no user gesture).
+        // We log it as a warning instead of an error to reduce noise.
+        console.warn('Could not get USB devices. This is expected if not on HTTPS or without user permission.', e);
+      }
     }
     if ('geolocation' in navigator && navigator.geolocation) {
       navigator.geolocation.watchPosition(p => this.emit('gps', { lat: p.coords.latitude, lng: p.coords.longitude }));

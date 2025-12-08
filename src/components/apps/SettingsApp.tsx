@@ -24,7 +24,11 @@ const SettingsApp: React.FC = () => {
   const setWallpaper = useDesktopStore((state) => state.setWallpaper);
   const { isDark, toggleTheme } = useTheme();
   const handleLanguageChange = (langCode: string) => {
-    i18n.changeLanguage(langCode);
+    try {
+      i18n.changeLanguage(langCode);
+    } catch (error) {
+      console.error("Failed to change language", error);
+    }
   };
   return (
     <ScrollArea className="h-full">
@@ -38,14 +42,14 @@ const SettingsApp: React.FC = () => {
             <CardTitle>{t('settings.appearance')}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-h-[44px] md:min-h-auto">
               <Label htmlFor="dark-mode">{t('settings.darkMode')}</Label>
               <Switch id="dark-mode" checked={isDark} onCheckedChange={toggleTheme} />
             </div>
             <div className="space-y-2">
               <Label>{t('settings.language')}</Label>
               <Select value={i18n.language} onValueChange={handleLanguageChange}>
-                <SelectTrigger>
+                <SelectTrigger className="min-h-[44px] md:min-h-auto">
                   <SelectValue placeholder="Select language" />
                 </SelectTrigger>
                 <SelectContent>
