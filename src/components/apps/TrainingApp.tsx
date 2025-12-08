@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,34 @@ const TrainingApp: React.FC = () => {
   const { data: leaderboardData, isLoading: isLoadingLeaderboard } = useTrainingLeaderboard();
   const updateProgressMutation = useUpdateProgress();
   const [activeCourse, setActiveCourse] = useState<TrainingProgress | null>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [visibleRows, setVisibleRows] = useState(5);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const lastRowRef = useRef<HTMLTableRowElement | null>(null);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+  const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
+    const target = entries[0];
+    if (target.isIntersecting) {
+      setVisibleRows(prev => Math.min(prev + 5, leaderboardData?.length || 5));
+    }
+  }, [leaderboardData]);
+  useEffect(() => {
+    observerRef.current = new IntersectionObserver(handleObserver, { threshold: 1.0 });
+    if (lastRowRef.current) {
+      observerRef.current.observe(lastRowRef.current);
+    }
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [handleObserver]);
   const earnedBadges = useMemo(() => courses?.filter(c => c.completed) || [], [courses]);
   const handleStartCourse = (courseId: number) => {
     const courseToStart = courses?.find(c => c.id === courseId);
@@ -109,8 +137,8 @@ const TrainingApp: React.FC = () => {
                     <TableHeader><TableRow><TableHead className="w-[50px]">{t('apps.training.rank')}</TableHead><TableHead>{t('apps.training.user')}</TableHead><TableHead className="text-right">{t('apps.training.points')}</TableHead></TableRow></TableHeader>
                     <TableBody>
                       {isLoadingLeaderboard ? Array.from({ length: 4 }).map((_, i) => <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell className="text-right"><Skeleton className="h-4 w-12" /></TableCell></TableRow>) :
-                        leaderboardData?.map((user) => (
-                          <TableRow key={user.rank} className={user.name === 'You' ? 'bg-accent' : ''}>
+                        leaderboardData?.slice(0, visibleRows).map((user, index) => (
+                          <TableRow key={user.rank} ref={index === visibleRows - 1 ? lastRowRef : null} className={user.name === 'You' ? 'bg-accent' : ''}>
                             <TableCell className="font-medium">{user.rank}</TableCell>
                             <TableCell><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={user.avatar} alt={user.name} /><AvatarFallback>{user.name.charAt(0)}</AvatarFallback></Avatar><span>{user.name}</span></div></TableCell>
                             <TableCell className="text-right">{user.points}</TableCell>
@@ -118,6 +146,7 @@ const TrainingApp: React.FC = () => {
                         ))}
                     </TableBody>
                   </Table>
+                  {leaderboardData && visibleRows < leaderboardData.length && <div aria-live="polite">More rows loaded</div>}
                 </CardContent>
               </Card>
             </TabsContent>

@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+const plugin = require('tailwindcss/plugin');
 export default {
   darkMode: ['class'],
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -28,6 +29,10 @@ export default {
   		},
   		fontSize: {
         'base': ['1rem', { lineHeight: '1.5' }],
+        'sm': ['0.875rem', { lineHeight: '1.25rem' }],
+        'lg': ['1.125rem', { lineHeight: '1.75rem' }],
+        'xl': ['1.25rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],
   			'2xs': [
   				'0.625rem',
   				{
@@ -240,5 +245,17 @@ export default {
   		}
   	}
   },
-  plugins: [require("tailwindcss-animate")]
+  plugins: [
+    require("tailwindcss-animate"),
+    plugin(function({ addUtilities }) {
+      addUtilities({
+        '.touch-target': {
+          '@media (max-width: 767px)': {
+            'min-height': '44px',
+            'min-width': '44px',
+          }
+        }
+      })
+    })
+  ]
 }

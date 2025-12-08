@@ -60,10 +60,14 @@
     font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
     text-rendering: optimizeLegibility;
     font-family: 'Inter', sans-serif;
+    padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
   #root {
+    padding-top: env(safe-area-inset-top, 0px);
     padding-bottom: env(safe-area-inset-bottom, 0px);
+    font-size: 1rem;
+    line-height: 1.5;
   }
   /* Improve mobile touch targets */
   @media (hover: none) and (pointer: coarse) {
@@ -76,6 +80,13 @@
     :root {
       --primary: 142 71% 26%;
     }
+    .high-contrast {
+      color: hsl(var(--primary));
+    }
+  }
+  .offline-badge {
+    min-height: 44px;
+    aria-live: polite;
   }
 }
 /* Print-friendly styles */

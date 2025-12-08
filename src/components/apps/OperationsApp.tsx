@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import * as L from 'leaflet';
@@ -8,6 +8,8 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical, Loader2 } from 'lucide-react';
 import { useOperationsRoutes } from '@/lib/api';
+import { useSwipeable } from 'react-swipeable';
+import { toast } from 'sonner';
 // Mock data for tasks until API is ready
 const initialTasks: Record<string, { id: string; content: string }[]> = {
   unassigned: [
@@ -26,17 +28,23 @@ const truckIcon = new L.Icon({
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
   iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
 });
-const TaskCard = ({ id, content }: { id: string; content: string }) => {
+const TaskCard = ({ id, content, onArchive, prefersReducedMotion }: { id: string; content: string; onArchive: (id: string) => void; prefersReducedMotion: boolean }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
+  const handlers = useSwipeable({
+    onSwipedLeft: () => onArchive(id),
+    delta: 50,
+    preventScrollOnSwipe: true,
+    trackMouse: true,
+  });
   return (
-    <div ref={setNodeRef} style={style} {...attributes} className="p-2.5 mb-2 bg-card border rounded-md shadow-sm flex items-center min-h-[44px] md:min-h-auto">
+    <div ref={setNodeRef} style={style} {...attributes} {...handlers} className={`p-2.5 mb-2 bg-card border rounded-md shadow-sm flex items-center min-h-[44px] md:min-h-auto touch-pan-y ${prefersReducedMotion ? '' : 'hover:bg-accent'}`}>
       <button {...listeners} className="cursor-grab p-1 -ml-1 mr-2 text-muted-foreground touch-none"><GripVertical size={16} /></button>
       <p className="text-sm flex-1">{content}</p>
     </div>
   );
 };
-const TaskColumn = ({ id, title, tasks }: { id: string; title: string; tasks: { id: string; content: string }[] }) => {
+const TaskColumn = ({ id, title, tasks, onArchive, prefersReducedMotion }: { id: string; title: string; tasks: { id: string; content: string }[]; onArchive: (id: string, containerId: string) => void; prefersReducedMotion: boolean }) => {
   const { setNodeRef } = useDroppable({ id });
   const taskIds = tasks.map(t => t.id);
   return (
@@ -45,7 +53,7 @@ const TaskColumn = ({ id, title, tasks }: { id: string; title: string; tasks: { 
       <ScrollArea className="flex-1">
         <CardContent ref={setNodeRef} className="h-full p-4">
           <SortableContext id={id} items={taskIds} strategy={verticalListSortingStrategy}>
-            {tasks.map(task => <TaskCard key={task.id} id={task.id} content={task.content} />)}
+            {tasks.map(task => <TaskCard key={task.id} id={task.id} content={task.content} onArchive={() => onArchive(task.id, id)} prefersReducedMotion={prefersReducedMotion} />)}
           </SortableContext>
         </CardContent>
       </ScrollArea>
@@ -59,45 +67,50 @@ const OperationsApp: React.FC = () => {
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<L.Map | null>(null);
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [dragAnnouncement, setDragAnnouncement] = useState('');
   useEffect(() => {
-    if (mapRef.current && !mapInstance.current) {
-      mapInstance.current = L.map(mapRef.current).setView(joburgCenter, 11);
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReducedMotion(mediaQuery.matches);
+    const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+  const debounce = <F extends (...args: any[]) => any>(func: F, waitFor: number) => {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    return (...args: Parameters<F>): Promise<ReturnType<F>> =>
+      new Promise(resolve => {
+        if (timeout) {
+          clearTimeout(timeout);
+        }
+        timeout = setTimeout(() => resolve(func(...args)), waitFor);
+      });
+  };
+  useEffect(() => {
+    const debouncedInvalidate = debounce(() => mapInstance.current?.invalidateSize(), 250);
+    const mapNode = mapRef.current;
+    if (mapNode && !mapInstance.current) {
+      mapInstance.current = L.map(mapNode).setView(joburgCenter, 11);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(mapInstance.current);
     }
     if (mapInstance.current && routesData) {
-      // Clear existing markers
       mapInstance.current.eachLayer(layer => {
-        if (layer instanceof L.Marker) {
-          mapInstance.current?.removeLayer(layer);
-        }
+        if (layer instanceof L.Marker) mapInstance.current?.removeLayer(layer);
       });
-      // Add new markers
       routesData.forEach(route => {
         if (route.positions && route.positions.length > 0) {
           const pos: L.LatLngExpression = [route.positions[0].lat, route.positions[0].lng];
-          L.marker(pos, { icon: truckIcon })
-            .addTo(mapInstance.current!)
-            .bindPopup(route.name);
+          L.marker(pos, { icon: truckIcon }).addTo(mapInstance.current!).bindPopup(route.name);
         }
       });
     }
-    // Invalidate size on window resize to fix map rendering issues
-    const resizeObserver = new ResizeObserver(() => {
-      mapInstance.current?.invalidateSize();
-    });
-    if (mapRef.current) {
-      resizeObserver.observe(mapRef.current);
-    }
+    const resizeObserver = new ResizeObserver(debouncedInvalidate);
+    if (mapNode) resizeObserver.observe(mapNode);
     return () => {
-      if (mapRef.current) {
-        resizeObserver.unobserve(mapRef.current);
-      }
-      if (mapInstance.current) {
-        mapInstance.current.remove();
-        mapInstance.current = null;
-      }
+      if (mapNode) resizeObserver.unobserve(mapNode);
+      // Do not destroy map on re-render, only on component unmount
     };
   }, [routesData]);
   const findContainer = (id: UniqueIdentifier) => {
@@ -114,6 +127,8 @@ const OperationsApp: React.FC = () => {
     const activeContainer = findContainer(active.id);
     const overContainer = findContainer(over.id);
     if (!activeContainer || !overContainer) return;
+    const activeTask = tasks[activeContainer].find(t => t.id === activeId);
+    const overContainerTitle = routesData?.find(r => r.id === overContainer)?.name || 'Unassigned Tasks';
     setTasks(prev => {
       const newTasks = { ...prev };
       const activeItems = newTasks[activeContainer];
@@ -135,23 +150,35 @@ const OperationsApp: React.FC = () => {
       }
       return newTasks;
     });
+    if (activeTask) {
+      setDragAnnouncement(`Task ${activeTask.content} moved to ${overContainerTitle}`);
+    }
+  };
+  const handleArchive = (taskId: string, containerId: string) => {
+    setTasks(prev => {
+      const newTasks = { ...prev };
+      newTasks[containerId] = newTasks[containerId].filter(task => task.id !== taskId);
+      return newTasks;
+    });
+    toast.success('Task archived');
   };
   return (
     <div className="h-full flex flex-col md:flex-row">
-      <div className="flex-1 md:flex-[2] bg-muted relative h-1/2 md:h-full">
+      <div className="flex-1 md:flex-[2] bg-muted relative h-full w-full md:h-[60vh]">
         {isLoadingRoutes && <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>}
         <div ref={mapRef} className="h-full w-full" />
       </div>
-      <div className="flex-1 border-t md:border-t-0 md:border-l p-4 flex flex-col h-1/2 md:h-full">
+      <div className="flex-1 border-t md:border-t-0 md:border-l p-4 flex flex-col h-full md:h-auto">
         <h2 className="text-xl font-bold mb-4">{t('apps.operations.taskBoard')}</h2>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <div className="flex gap-4 flex-1 overflow-x-auto">
-            <TaskColumn id="unassigned" title={t('apps.operations.unassignedTasks')} tasks={tasks.unassigned} />
+            <TaskColumn id="unassigned" title={t('apps.operations.unassignedTasks')} tasks={tasks.unassigned} onArchive={handleArchive} prefersReducedMotion={prefersReducedMotion} />
             {routesData?.map(route => (
-              <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id] || []} />
+              <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id] || []} onArchive={handleArchive} prefersReducedMotion={prefersReducedMotion} />
             ))}
           </div>
         </DndContext>
+        <div aria-live="polite" aria-atomic="true" className="sr-only">{dragAnnouncement}</div>
       </div>
     </div>
   );

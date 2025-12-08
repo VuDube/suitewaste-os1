@@ -96,7 +96,7 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
               <TooltipProvider delayDuration={300}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => setWindowState(id, 'minimized')} onKeyDown={(e) => handleKeyDown(e, () => setWindowState(id, 'minimized'))} aria-label={t('os.windowControls.minimize')} className="p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
+                    <button onClick={() => setWindowState(id, 'minimized')} onKeyDown={(e) => handleKeyDown(e, () => setWindowState(id, 'minimized'))} aria-label={t('os.windowControls.minimize')} className="p-3 md:p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
                       <Minus size={14} />
                     </button>
                   </TooltipTrigger>
@@ -105,7 +105,7 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
                 {!isMobile && (
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <button onClick={handleMaximizeToggle} onKeyDown={(e) => handleKeyDown(e, handleMaximizeToggle)} aria-label={win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')} className="p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
+                      <button onClick={handleMaximizeToggle} onKeyDown={(e) => handleKeyDown(e, handleMaximizeToggle)} aria-label={win.state === 'maximized' ? t('os.windowControls.restore') : t('os.windowControls.maximize')} className="p-3 md:p-2 rounded hover:bg-muted min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
                         {win.state === 'maximized' ? <Minimize2 size={14} /> : <Square size={14} />}
                       </button>
                     </TooltipTrigger>
@@ -114,7 +114,7 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
                 )}
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <button onClick={() => closeApp(id)} onKeyDown={(e) => handleKeyDown(e, () => closeApp(id))} aria-label={t('os.windowControls.close')} className="p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
+                    <button onClick={() => closeApp(id)} onKeyDown={(e) => handleKeyDown(e, () => closeApp(id))} aria-label={t('os.windowControls.close')} className="p-3 md:p-2 rounded hover:bg-destructive/80 hover:text-destructive-foreground min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto flex items-center justify-center">
                       <X size={14} />
                     </button>
                   </TooltipTrigger>

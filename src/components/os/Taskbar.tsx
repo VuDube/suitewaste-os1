@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import StartMenu from './StartMenu';
 import SystemTray from './SystemTray';
@@ -9,6 +9,26 @@ import DesktopSwitcher from './DesktopSwitcher';
 import { WifiOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+const useOfflineStatus = () => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const handleOnline = useCallback(() => {
+    setIsOnline(true);
+    toast.success("You are back online!");
+  }, []);
+  const handleOffline = useCallback(() => {
+    setIsOnline(false);
+    toast.warning("You are currently offline.");
+  }, []);
+  useEffect(() => {
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [handleOnline, handleOffline]);
+  return isOnline;
+};
 const Taskbar: React.FC = () => {
   const { windows, activeWindowId, setWindowState, focusWindow, currentDesktopId } = useDesktopStore(
     useShallow((state) => ({
@@ -19,23 +39,7 @@ const Taskbar: React.FC = () => {
       currentDesktopId: state.currentDesktopId,
     }))
   );
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      toast.success("You are back online!");
-    };
-    const handleOffline = () => {
-      setIsOnline(false);
-      toast.warning("You are currently offline.");
-    };
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
+  const isOnline = useOfflineStatus();
   const handleTaskbarIconClick = (winId: string, winState: 'minimized' | 'normal' | 'maximized') => {
     if (activeWindowId === winId && winState !== 'minimized') {
       setWindowState(winId, 'minimized');
@@ -52,7 +56,7 @@ const Taskbar: React.FC = () => {
       layoutId="taskbar"
       role="navigation"
       aria-label="Taskbar"
-      className="absolute bottom-0 left-0 right-0 h-12 md:h-12 min-h-[56px] bg-background/50 backdrop-blur-xl border-t border-border/50 z-[99999] flex items-center justify-between px-2 pb-[calc(env(safe-area-inset-bottom,0px))]"
+      className="absolute bottom-0 left-0 right-0 h-14 bg-background/50 backdrop-blur-xl border-t border-border/50 z-[99999] flex items-center justify-between px-2 pb-[calc(env(safe-area-inset-bottom,0px)+0.5rem)]"
     >
       <div className="flex items-center gap-2">
         <StartMenu />
@@ -71,7 +75,7 @@ const Taskbar: React.FC = () => {
                   exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
                   onClick={() => handleTaskbarIconClick(win.id, win.state)}
                   className={cn(
-                    'flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors relative min-h-[44px] md:min-h-auto',
+                    'flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors relative min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto',
                     activeWindowId === win.id && win.state !== 'minimized' ? 'bg-accent' : ''
                   )}
                   title={win.title}
@@ -95,7 +99,7 @@ const Taskbar: React.FC = () => {
         </div>
       </div>
       {!isOnline && (
-        <Badge variant="destructive" className="ml-2 hidden md:flex items-center gap-1">
+        <Badge variant="destructive" aria-live="polite" className="ml-2 hidden md:flex items-center gap-1 min-h-[44px] min-w-auto md:min-h-auto">
           <WifiOff size={14} /> Offline
         </Badge>
       )}
