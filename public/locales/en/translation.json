@@ -4,7 +4,14 @@
       "title": "Dashboard",
       "description": "Real-time insights into waste management operations.",
       "aiInsights": "AI Insights & Anomalies",
-      "aiInsightsDesc": "Proactive alerts and suggestions from our AI."
+      "aiInsightsDesc": "Proactive alerts and suggestions from our AI.",
+      "collected": "Waste Collected (Tons)",
+      "routesCompleted": "Routes Completed",
+      "recyclingRate": "Recycling Rate",
+      "collectionTrend": "Waste Collection Trend",
+      "composition": "Waste Composition",
+      "anomaly": "Anomaly Detected: Route R003 shows 30% less collection than average for this area.",
+      "suggestion": "Suggestion: Consider adding an extra pickup for the Sandton area next week based on projected waste increase."
     },
     "operations": {
       "title": "Operations",
@@ -51,6 +58,7 @@
       "classificationComplete": "Classification Complete",
       "viewOnBlockchain": "View on Chain",
       "transactionHistory": "Item Transaction History",
+      "blockchainDescription": "This is a simplified visualization of the item's ownership history on a distributed ledger.",
       "genesisBlock": "Genesis",
       "tx": "Tx"
     },
@@ -61,6 +69,7 @@
       "resume": "Resume",
       "completed": "Completed",
       "quizTitle": "Knowledge Check",
+      "quizDescription": "Answer the following questions to test your knowledge.",
       "question": "Question",
       "nextQuestion": "Next Question",
       "submitQuiz": "Submit Quiz",
@@ -109,6 +118,25 @@
       "maximize": "Maximize",
       "restore": "Restore",
       "close": "Close"
+    },
+    "window": {
+      "maximized": "Window maximized",
+      "restored": "Window restored"
     }
+  },
+  "hardware": {
+    "offline": "Offline",
+    "onlineStatus": "You are back online!",
+    "offlineStatus": "You are currently offline."
+  },
+  "charts": {
+    "jan": "January",
+    "feb": "February",
+    "mar": "March",
+    "apr": "April",
+    "may": "May",
+    "jun": "June",
+    "tons": "tons",
+    "tonsCollected": "Tons Collected"
   }
 }

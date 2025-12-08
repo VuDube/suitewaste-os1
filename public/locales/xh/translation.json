@@ -4,7 +4,14 @@
       "title": "Ideshibhodi",
       "description": "Iingqiqo zexesha lokwenyani malunga nemisebenzi yolawulo lwenkunkuma.",
       "aiInsights": "Iingqiqo ze-AI & Iimpazamo",
-      "aiInsightsDesc": "Izilumkiso ezisebenzayo kunye neengcebiso ezivela kwi-AI yethu."
+      "aiInsightsDesc": "Izilumkiso ezisebenzayo kunye neengcebiso ezivela kwi-AI yethu.",
+      "collected": "Inkunkuma Eqokelelweyo (Iitoni)",
+      "routesCompleted": "Iindlela Ezigqityiweyo",
+      "recyclingRate": "Ireyithi Yokurisayikilisha",
+      "collectionTrend": "Umkhwa Wokuqokelelwa Kwenkunkuma",
+      "composition": "Ukwakhiwa Kwenkunkuma",
+      "anomaly": "Kufunyenwe impazamo: Indlela R003 ibonisa ingqokelela engaphantsi ngama-30% kunomyinge wale ndawo.",
+      "suggestion": "Ingcebiso: Cinga ngokongeza ilori eyongezelelweyo kwindawo yaseSandton kwiveki ezayo ngokusekelwe kunyuso lwenkunkuma oluqikelelweyo."
     },
     "operations": {
       "title": "Imisebenzi",
@@ -51,6 +58,7 @@
       "classificationComplete": "Ukwahlulahlula kugqityiwe",
       "viewOnBlockchain": "Jonga kwi-Chain",
       "transactionHistory": "Imbali Yentengiselwano Yento",
+      "blockchainDescription": "Lo ngumboniso owenziwe lula wembali yobunini bento kwileja esasaziweyo.",
       "genesisBlock": "Isiqalo",
       "tx": "Intengiselwano"
     },
@@ -61,6 +69,7 @@
       "resume": "Qhubeka",
       "completed": "Gqityiwe",
       "quizTitle": "Uvavanyo Lolwazi",
+      "quizDescription": "Phendula le mibuzo ilandelayo ukuvavanya ulwazi lwakho.",
       "question": "Umbuzo",
       "nextQuestion": "Umbuzo Olandelayo",
       "submitQuiz": "Ngenisa Imibuzo",
@@ -109,6 +118,25 @@
       "maximize": "Khulisa",
       "restore": "Buyisela",
       "close": "Vala"
+    },
+    "window": {
+      "maximized": "Ifestile ikhulisiwe",
+      "restored": "Ifestile ibuyiselwe"
     }
+  },
+  "hardware": {
+    "offline": "Ayikho kwi-intanethi",
+    "onlineStatus": "Ubuyile kwi-intanethi!",
+    "offlineStatus": "Okwangoku awukho kwi-intanethi."
+  },
+  "charts": {
+    "jan": "Janyuwari",
+    "feb": "Februwari",
+    "mar": "Matshi",
+    "apr": "Epreli",
+    "may": "Meyi",
+    "jun": "Juni",
+    "tons": "iitoni",
+    "tonsCollected": "Iitoni Eziqokelelweyo"
   }
 }

@@ -73,22 +73,24 @@ This command will build the frontend application and deploy both the static asse
 After deployment, verify the following core functionalities:
 -   [ ] **OS Shell:** Open, close, minimize, maximize, drag, and resize multiple application windows.
 -   [ ] **Virtual Desktops:** Create new desktops, switch between them, and confirm windows are isolated.
--   [ ] **Operations App:** Verify the map loads correctly and tasks can be dragged between columns.
--   [ ] **Compliance App:** Check and uncheck items on the checklist.
+-   [ ] **Dashboard App:** Verify KPI cards and charts load with shimmer animations.
+-   [ ] **Operations App:** Verify the map loads correctly and tasks can be dragged between columns. Swipe a task left to archive it.
+-   [ ] **Compliance App:** Check and uncheck items on the checklist. Run the AI Audit.
 -   [ ] **Payments App:** Submit a new payment and see it appear in the transaction history.
 -   [ ] **Marketplace App:** Use the camera to "scan" an item and create a new listing.
 -   [ ] **Training Hub:** Start a course, complete a quiz, and check the leaderboard/badges.
--   [ ] **AI Assistant:** Have a conversation with the AI assistant.
--   [ ] **Settings:** Change the theme, language, and wallpaper.
+-   [ ] **AI Assistant:** Have a conversation with the AI assistant and test its tool usage (e.g., "search the web for...").
+-   [ ] **Settings:** Change the theme, language (including isiXhosa), and wallpaper.
 ## PWA & Offline Testing
 1.  **Installation:** When running the application in a compatible browser (like Chrome), an install icon will appear in the address bar. Click it to install SuiteWaste OS as a standalone desktop application.
-2.  **Offline Mode:** Once installed, the application's core assets are cached. To test offline functionality, open your browser's developer tools, go to the "Network" tab, and select the "Offline" preset. The application should still load and be usable.
+2.  **Offline Mode:** Once installed, the application's core assets are cached. To test offline functionality, open your browser's developer tools, go to the "Network" tab, and select the "Offline" preset. The application should still load and be usable. Data-driven apps will show cached data or empty states gracefully.
 ## Hardware & Backend Integration
 -   **Hardware Setup:** For features like the e-Waste camera scanner and GPS tracking, ensure the browser has the necessary permissions. The application must be served over HTTPS for these features to work.
 -   **Backend API Contract:** The backend integration plan and API contracts are detailed in `AUDIT_REPORT.md`. This document serves as the primary guide for the backend development team.
 ## Troubleshooting
 -   **AI Assistant Not Responding:** Ensure your `CF_AI_BASE_URL` and `CF_AI_API_KEY` are correctly set in your `.dev.vars` file (for local development) or as secrets in your Cloudflare dashboard (for production). Note that there is a limit on the number of requests that can be made to the AI servers.
 -   **Web Search Tool Fails:** The web search tool requires a `SERPAPI_KEY`. Make sure it is configured.
+-   **Hardware Features Not Working:** Camera, GPS, and other hardware APIs require a secure context. Ensure the application is served over **HTTPS**.
 -   **Deployment Fails:** Double-check that the `name` in `wrangler.jsonc` is lowercase and alphanumeric. Also, ensure your Cloudflare API token has the correct permissions.
 ---
 *Built with ❤️ at Cloudflare*

@@ -4,7 +4,14 @@
       "title": "Dashboard",
       "description": "Intydse insigte in afvalbestuurbedrywighede.",
       "aiInsights": "KI Insigte & Afwykings",
-      "aiInsightsDesc": "Proaktiewe waarskuwings en voorstelle van ons KI."
+      "aiInsightsDesc": "Proaktiewe waarskuwings en voorstelle van ons KI.",
+      "collected": "Afval Versamel (Tonne)",
+      "routesCompleted": "Roetes Voltooi",
+      "recyclingRate": "Herwinningskoers",
+      "collectionTrend": "Afvalversamelingstendens",
+      "composition": "Afvalsamestelling",
+      "anomaly": "Afwyking bespeur: Roete R003 toon 30% minder versameling as die gemiddelde vir hierdie area.",
+      "suggestion": "Voorstel: Oorweeg om volgende week 'n ekstra bakkie vir die Sandton-area by te voeg op grond van geprojekteerde afvalverhoging."
     },
     "operations": {
       "title": "Bedrywighede",
@@ -51,6 +58,7 @@
       "classificationComplete": "Klassifikasie voltooi",
       "viewOnBlockchain": "Besigtig op Ketting",
       "transactionHistory": "Item Transaksiegeskiedenis",
+      "blockchainDescription": "Dit is 'n vereenvoudigde visualisering van die item se eienaarskapgeskiedenis op 'n verspreide grootboek.",
       "genesisBlock": "Genesis",
       "tx": "Tx"
     },
@@ -61,6 +69,7 @@
       "resume": "Hervat",
       "completed": "Voltooi",
       "quizTitle": "Kennis Toets",
+      "quizDescription": "Beantwoord die volgende vrae om jou kennis te toets.",
       "question": "Vraag",
       "nextQuestion": "Volgende Vraag",
       "submitQuiz": "Dien Vasvra in",
@@ -109,6 +118,25 @@
       "maximize": "Maksimeer",
       "restore": "Herstel",
       "close": "Maak toe"
+    },
+    "window": {
+      "maximized": "Venster gemaksimeer",
+      "restored": "Venster herstel"
     }
+  },
+  "hardware": {
+    "offline": "Vanlyn",
+    "onlineStatus": "Jy is weer aanlyn!",
+    "offlineStatus": "Jy is tans vanlyn."
+  },
+  "charts": {
+    "jan": "Januarie",
+    "feb": "Februarie",
+    "mar": "Maart",
+    "apr": "April",
+    "may": "Mei",
+    "jun": "Junie",
+    "tons": "tonne",
+    "tonsCollected": "Tonne Versamel"
   }
 }

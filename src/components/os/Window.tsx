@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Minimize2, Square, Minus } from 'lucide-react';
 import { useDesktopStore, WindowInstance } from '@/stores/useDesktopStore';
@@ -21,6 +21,8 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   const isActive = activeWindowId === id;
   const [RndComponent, setRndComponent] = useState<any>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const dragRafId = useRef<number>();
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
@@ -39,10 +41,15 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
       .catch(() => {});
     return () => {
       mounted = false;
+      if (dragRafId.current) {
+        cancelAnimationFrame(dragRafId.current);
+      }
     };
   }, []);
   const handleMaximizeToggle = () => {
-    setWindowState(id, win.state === 'maximized' ? 'normal' : 'maximized');
+    const newState = win.state === 'maximized' ? 'normal' : 'maximized';
+    setWindowState(id, newState);
+    setAnnouncement(t(newState === 'maximized' ? 'os.window.maximized' : 'os.window.restored'));
   };
   const windowVariants = {
     hidden: { scale: 0.8, opacity: 0 },
@@ -123,6 +130,7 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
               </TooltipProvider>
             </div>
           </header>
+          <div aria-live="polite" className="sr-only">{announcement}</div>
           <div className="flex-1 overflow-hidden bg-background/50">
             {children}
           </div>
@@ -136,7 +144,12 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
         size={isMaximized ? { width: '100%', height: '100%' } : win.size}
         position={isMaximized ? { x: 0, y: 0 } : win.position}
         onDragStart={() => focusWindow(id)}
-        onDragStop={(_e: any, d: any) => updateWindowPosition(id, { x: d.x, y: d.y })}
+        onDragStop={(_e: any, d: any) => {
+          if (dragRafId.current) cancelAnimationFrame(dragRafId.current);
+          dragRafId.current = requestAnimationFrame(() => {
+            updateWindowPosition(id, { x: d.x, y: d.y });
+          });
+        }}
         onResizeStart={() => focusWindow(id)}
         onResizeStop={(_e: any, _dir: any, ref: any, _delta: any, pos: any) => {
           updateWindowSize(id, { width: ref.style.width, height: ref.style.height });

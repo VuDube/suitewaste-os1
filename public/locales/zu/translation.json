@@ -4,7 +4,14 @@
       "title": "Ideshibhodi",
       "description": "Ulwazi lwesikhathi sangempela mayelana nokusebenza kokuphathwa kukadoti.",
       "aiInsights": "Ukuqonda kwe-AI & Okuphambene",
-      "aiInsightsDesc": "Izexwayiso ezisebenzayo neziphakamiso ezivela ku-AI yethu."
+      "aiInsightsDesc": "Izexwayiso ezisebenzayo neziphakamiso ezivela ku-AI yethu.",
+      "collected": "Udoti Oqoqiwe (Amathani)",
+      "routesCompleted": "Imizila Eqediwe",
+      "recyclingRate": "Izinga Lokugaywa kabusha",
+      "collectionTrend": "Umkhuba Wokuqoqwa Kukadoti",
+      "composition": "Ukwakheka Kukadoti",
+      "anomaly": "Kutholakele okungajwayelekile: Umzila u-R003 ukhombisa ukuqoqwa okuncane ngo-30% kunokwejwayelekile kule ndawo.",
+      "suggestion": "Isiphakamiso: Cabangela ukwengeza ukuqoqwa okwengeziwe endaweni yaseSandton ngesonto elizayo ngokususelwa ekwandeni kukadoti okulindelekile."
     },
     "operations": {
       "title": "Ukusebenza",
@@ -51,6 +58,7 @@
       "classificationComplete": "Ukuhlukanisa kuphothuliwe",
       "viewOnBlockchain": "Buka ku-Chain",
       "transactionHistory": "Umlando Wokuthengiselana Kwento",
+      "blockchainDescription": "Lokhu ukuboniswa okulula komlando wobunikazi bento kurejista esatshalalisiwe.",
       "genesisBlock": "Isiqalo",
       "tx": "Ukuthengiselana"
     },
@@ -61,6 +69,7 @@
       "resume": "Qhubeka",
       "completed": "Kuphothuliwe",
       "quizTitle": "Ukuhlolwa Kolwazi",
+      "quizDescription": "Phendula imibuzo elandelayo ukuze uhlole ulwazi lwakho.",
       "question": "Umbuzo",
       "nextQuestion": "Umbuzo Olandelayo",
       "submitQuiz": "Thumela Imibuzo",
@@ -109,6 +118,25 @@
       "maximize": "Khulisa",
       "restore": "Buyisela",
       "close": "Vala"
+    },
+    "window": {
+      "maximized": "Ifasitela likhulisiwe",
+      "restored": "Ifasitela libuyiselwe"
     }
+  },
+  "hardware": {
+    "offline": "Ayixhunyiwe",
+    "onlineStatus": "Usuxhumekile futhi!",
+    "offlineStatus": "Okwamanje awuxhunyiwe."
+  },
+  "charts": {
+    "jan": "Januwari",
+    "feb": "Febhuwari",
+    "mar": "Mashi",
+    "apr": "Ephreli",
+    "may": "Meyi",
+    "jun": "Juni",
+    "tons": "amathani",
+    "tonsCollected": "Amathani Aqoqwe"
   }
 }

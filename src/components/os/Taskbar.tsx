@@ -9,16 +9,18 @@ import DesktopSwitcher from './DesktopSwitcher';
 import { WifiOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
+import { useTranslation } from 'react-i18next';
 const useOfflineStatus = () => {
+  const { t } = useTranslation();
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const handleOnline = useCallback(() => {
     setIsOnline(true);
-    toast.success("You are back online!");
-  }, []);
+    toast.success(t('hardware.onlineStatus'));
+  }, [t]);
   const handleOffline = useCallback(() => {
     setIsOnline(false);
-    toast.warning("You are currently offline.");
-  }, []);
+    toast.warning(t('hardware.offlineStatus'));
+  }, [t]);
   useEffect(() => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -30,6 +32,7 @@ const useOfflineStatus = () => {
   return isOnline;
 };
 const Taskbar: React.FC = () => {
+  const { t } = useTranslation();
   const { windows, activeWindowId, setWindowState, focusWindow, currentDesktopId } = useDesktopStore(
     useShallow((state) => ({
       windows: state.windows,
@@ -73,16 +76,18 @@ const Taskbar: React.FC = () => {
                   initial={{ opacity: 0, scale: 0.8 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.1 } }}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleTaskbarIconClick(win.id, win.state)}
                   className={cn(
                     'flex items-center gap-2 px-3 py-1.5 rounded-md hover:bg-accent transition-colors relative min-h-[44px] min-w-[44px] md:min-h-auto md:min-w-auto',
                     activeWindowId === win.id && win.state !== 'minimized' ? 'bg-accent' : ''
                   )}
-                  title={win.title}
+                  title={t(win.title)}
                   aria-pressed={activeWindowId === win.id && win.state !== 'minimized'}
                 >
                   <win.icon className="w-5 h-5" />
-                  <span className="text-sm hidden md:inline">{win.title}</span>
+                  <span className="text-sm hidden md:inline">{t(win.title)}</span>
                   {win.state !== 'minimized' && (
                     <motion.div
                       layoutId={`active_indicator_${win.id}`}
@@ -98,11 +103,20 @@ const Taskbar: React.FC = () => {
           </div>
         </div>
       </div>
-      {!isOnline && (
-        <Badge variant="destructive" aria-live="polite" className="ml-2 hidden md:flex items-center gap-1 min-h-[44px] min-w-auto md:min-h-auto">
-          <WifiOff size={14} /> Offline
-        </Badge>
-      )}
+      <AnimatePresence>
+        {!isOnline && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <Badge variant="destructive" aria-live="polite" aria-label={t('hardware.offline')} className="ml-2 hidden md:flex items-center gap-1 min-h-[44px] min-w-auto md:min-h-auto">
+              <WifiOff size={14} /> {t('hardware.offline')}
+            </Badge>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <SystemTray />
     </motion.footer>
   );
