@@ -9,9 +9,7 @@ import DesktopSwitcher from './DesktopSwitcher';
 import { WifiOff } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
-const useOfflineStatus = () => {
-  const { t } = useTranslation();
+const useOfflineStatus = (t: (key: string) => string) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const handleOnline = useCallback(() => {
     setIsOnline(true);
@@ -32,17 +30,14 @@ const useOfflineStatus = () => {
   return isOnline;
 };
 const Taskbar: React.FC = () => {
-  const { t } = useTranslation();
-  const { windows, activeWindowId, setWindowState, focusWindow, currentDesktopId } = useDesktopStore(
-    useShallow((state) => ({
-      windows: state.windows,
-      activeWindowId: state.activeWindowId,
-      setWindowState: state.setWindowState,
-      focusWindow: state.focusWindow,
-      currentDesktopId: state.currentDesktopId,
-    }))
-  );
-  const isOnline = useOfflineStatus();
+  const i18n = (window as any).i18nInstance;
+  const t = i18n ? i18n.t.bind(i18n) : (k: string) => k.split('.').pop() || k;
+  const windows = useDesktopStore(state => state.windows);
+  const activeWindowId = useDesktopStore(state => state.activeWindowId);
+  const setWindowState = useDesktopStore(state => state.setWindowState);
+  const focusWindow = useDesktopStore(state => state.focusWindow);
+  const currentDesktopId = useDesktopStore(state => state.currentDesktopId);
+  const isOnline = useOfflineStatus(t);
   const handleTaskbarIconClick = (winId: string, winState: 'minimized' | 'normal' | 'maximized') => {
     if (activeWindowId === winId && winState !== 'minimized') {
       setWindowState(winId, 'minimized');

@@ -5,10 +5,10 @@ import { APPS } from '@/config/apps.config';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { motion } from 'framer-motion';
 import { Leaf } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 const StartMenu: React.FC = () => {
-  const { t } = useTranslation();
+  const i18n = (window as any).i18nInstance;
+  const t = i18n ? i18n.t.bind(i18n) : (k: string, opts?: any) => (opts?.defaultValue !== undefined ? opts.defaultValue : k.split('.').pop() || k);
   const openApp = useDesktopStore((state) => state.openApp);
   const [isOpen, setIsOpen] = React.useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);

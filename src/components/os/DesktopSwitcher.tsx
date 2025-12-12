@@ -5,19 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Plus, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
-import { useTranslation } from 'react-i18next';
 import { useSwipeable } from 'react-swipeable';
 const DesktopSwitcher: React.FC = () => {
-  const { t } = useTranslation();
-  const { desktops, currentDesktopId, setCurrentDesktop, addDesktop, removeDesktop } = useDesktopStore(
-    useShallow((state) => ({
-      desktops: state.desktops,
-      currentDesktopId: state.currentDesktopId,
-      setCurrentDesktop: state.setCurrentDesktop,
-      addDesktop: state.addDesktop,
-      removeDesktop: state.removeDesktop,
-    }))
-  );
+  const i18n = (window as any).i18nInstance;
+  const t = i18n ? i18n.t.bind(i18n) : (k: string) => k.split('.').pop() || k;
+  const desktops = useDesktopStore(state => state.desktops);
+  const currentDesktopId = useDesktopStore(state => state.currentDesktopId);
+  const setCurrentDesktop = useDesktopStore(state => state.setCurrentDesktop);
+  const addDesktop = useDesktopStore(state => state.addDesktop);
+  const removeDesktop = useDesktopStore(state => state.removeDesktop);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');

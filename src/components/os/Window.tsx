@@ -19,7 +19,7 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
   const activeWindowId = useDesktopStore((state) => state.activeWindowId);
   const isMobile = useIsMobile();
   const isActive = activeWindowId === id;
-  const [RndComponent, setRndComponent] = useState<any>(null);
+  const RndGlobal = (window as any).ReactRnd;
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [announcement, setAnnouncement] = useState('');
   const dragRafId = useRef<number>();
@@ -28,19 +28,8 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
     setPrefersReducedMotion(mediaQuery.matches);
     const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-  useEffect(() => {
-    let mounted = true;
-    import('react-rnd')
-      .then((m) => {
-        if (mounted) {
-          setRndComponent(() => (m?.Rnd ?? m?.default ?? m));
-        }
-      })
-      .catch(() => {});
     return () => {
-      mounted = false;
+      mediaQuery.removeEventListener('change', handleChange);
       if (dragRafId.current) {
         cancelAnimationFrame(dragRafId.current);
       }
@@ -138,9 +127,9 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
       </AnimatePresence>
     );
   };
-  return (
-    RndComponent ? (
-      <RndComponent
+  if (RndGlobal) {
+    return (
+      <RndGlobal
         size={isMaximized ? { width: '100%', height: '100%' } : win.size}
         position={isMaximized ? { x: 0, y: 0 } : win.position}
         onDragStart={() => focusWindow(id)}
@@ -165,15 +154,28 @@ const Window: React.FC<WindowProps> = ({ id, children, ...win }) => {
         className={cn('flex window-print-container', isMobile ? '!w-full !h-full !transform-none' : '')}
       >
         {renderContent()}
-      </RndComponent>
-    ) : (
-      <div
-        style={{ zIndex: win.zIndex, width: win.size.width, height: win.size.height, transform: `translate(${win.position.x}px, ${win.position.y}px)` }}
-        className={cn('flex absolute window-print-container', isMobile ? '!w-full !h-full !transform-none' : '')}
-      >
-        {renderContent()}
-      </div>
-    )
+      </RndGlobal>
+    );
+  }
+  // Fallback for when react-rnd fails to load
+  return (
+    <div
+      style={{
+        zIndex: win.zIndex,
+        width: isMaximized ? '100%' : win.size.width,
+        height: isMaximized ? '100%' : win.size.height,
+        top: isMaximized ? 0 : win.position.y,
+        left: isMaximized ? 0 : win.position.x,
+        resize: isMaximized ? 'none' : 'both',
+        overflow: 'auto',
+        cursor: isMaximized ? 'default' : 'auto',
+        minWidth: '300px',
+        minHeight: '200px',
+      }}
+      className={cn('flex absolute window-print-container', isMobile ? '!w-full !h-full !transform-none' : '')}
+    >
+      {renderContent()}
+    </div>
   );
 };
 export default Window;

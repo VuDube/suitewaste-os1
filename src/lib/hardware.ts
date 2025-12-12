@@ -1,6 +1,7 @@
 /* Lightweight browser EventEmitter polyfill providing on/once/off/emit.
    Keeps API surface compatible with Node's EventEmitter for useHardwareManager
    (manager.on, manager.once, manager.off, manager.emit). */
+import { errorReporter } from '@/lib/errorReporter';
 export class EventEmitter {
   private listeners: Map<string, Set<(...args: any[]) => void>>;
   constructor() {
@@ -87,18 +88,22 @@ export class DeviceManager extends EventEmitter {
   public async detectDevices() {
     if ('usb' in navigator && (navigator as any).usb && typeof (navigator as any).usb.getDevices === 'function') {
       try {
-        // This can throw a SecurityError if the page is not served over HTTPS
-        // or if the user has not granted permission.
         const devices = await (navigator as any).usb.getDevices();
         devices.forEach((d: any) => this.emit('device', { id: d.serialNumber, type: 'usb', status: 'connected', connectedAt: Date.now() }));
       } catch (e) {
-        // This is an expected warning in many environments (e.g., HTTP, iframes, no user gesture).
-        // We log it as a warning instead of an error to reduce noise.
-        console.warn('Could not get USB devices. This is expected if not on HTTPS or without user permission.', e);
+        const msg = 'Could not get USB devices. This is expected if not on HTTPS or without user permission.';
+        if (import.meta.env.DEV) {
+            errorReporter.report({ message: msg, level: 'warning', error: e });
+        } else {
+            console.warn(msg, e);
+        }
       }
     }
     if ('geolocation' in navigator && navigator.geolocation) {
-      navigator.geolocation.watchPosition(p => this.emit('gps', { lat: p.coords.latitude, lng: p.coords.longitude }));
+      navigator.geolocation.watchPosition(
+        p => this.emit('gps', { lat: p.coords.latitude, lng: p.coords.longitude }),
+        err => this.emit('error', `GPS Error: ${err.message}`)
+      );
     }
   }
   public async queueAction(action: { type: string; data: any; retryCount?: number }) {

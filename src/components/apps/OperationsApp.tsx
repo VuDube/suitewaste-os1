@@ -1,8 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import * as L from 'leaflet';
-import { useTranslation } from 'react-i18next';
 import { DndContext, closestCenter, DragEndEvent, useSensor, useSensors, PointerSensor, TouchSensor, useDroppable, UniqueIdentifier } from '@dnd-kit/core';
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -21,13 +19,6 @@ const initialTasks: Record<string, { id: string; content: string }[]> = {
   R002: [],
   R003: [{ id: 'T005', content: 'Industrial park clearing' }],
 };
-const joburgCenter: L.LatLngExpression = [-26.2041, 28.0473];
-const truckIcon = new L.Icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-  iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
-});
 const TaskCard = ({ id, content, onArchive, prefersReducedMotion }: { id: string; content: string; onArchive: (id: string) => void; prefersReducedMotion: boolean }) => {
   const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
   const style = { transform: CSS.Transform.toString(transform), transition };
@@ -61,12 +52,13 @@ const TaskColumn = ({ id, title, tasks, onArchive, prefersReducedMotion }: { id:
   );
 };
 const OperationsApp: React.FC = () => {
-  const { t } = useTranslation();
+  const i18n = (window as any).i18nInstance;
+  const t = i18n ? i18n.t.bind(i18n) : (k: string) => k.split('.').pop() || k;
   const [tasks, setTasks] = useState(initialTasks);
   const { data: routesData, isLoading: isLoadingRoutes } = useOperationsRoutes();
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<L.Map | null>(null);
+  const mapInstance = useRef<any | null>(null); // L.Map
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [dragAnnouncement, setDragAnnouncement] = useState('');
   useEffect(() => {
@@ -80,13 +72,20 @@ const OperationsApp: React.FC = () => {
     let timeout: ReturnType<typeof setTimeout> | null = null;
     return (...args: Parameters<F>): Promise<ReturnType<F>> =>
       new Promise(resolve => {
-        if (timeout) {
-          clearTimeout(timeout);
-        }
+        if (timeout) clearTimeout(timeout);
         timeout = setTimeout(() => resolve(func(...args)), waitFor);
       });
   };
   useEffect(() => {
+    if (typeof window === 'undefined' || !(window as any).L) return;
+    const L = (window as any).L;
+    const joburgCenter: [number, number] = [-26.2041, 28.0473];
+    const truckIcon = new L.Icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+      shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+      iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
+    });
     const debouncedInvalidate = debounce(() => mapInstance.current?.invalidateSize(), 250);
     const mapNode = mapRef.current;
     if (mapNode && !mapInstance.current) {
@@ -96,12 +95,12 @@ const OperationsApp: React.FC = () => {
       }).addTo(mapInstance.current);
     }
     if (mapInstance.current && routesData) {
-      mapInstance.current.eachLayer(layer => {
+      mapInstance.current.eachLayer((layer: any) => {
         if (layer instanceof L.Marker) mapInstance.current?.removeLayer(layer);
       });
       routesData.forEach(route => {
         if (route.positions && route.positions.length > 0) {
-          const pos: L.LatLngExpression = [route.positions[0].lat, route.positions[0].lng];
+          const pos: [number, number] = [route.positions[0].lat, route.positions[0].lng];
           L.marker(pos, { icon: truckIcon }).addTo(mapInstance.current!).bindPopup(route.name);
         }
       });
@@ -110,7 +109,6 @@ const OperationsApp: React.FC = () => {
     if (mapNode) resizeObserver.observe(mapNode);
     return () => {
       if (mapNode) resizeObserver.unobserve(mapNode);
-      // Do not destroy map on re-render, only on component unmount
     };
   }, [routesData]);
   const findContainer = (id: UniqueIdentifier) => {
@@ -162,6 +160,9 @@ const OperationsApp: React.FC = () => {
     });
     toast.success('Task archived');
   };
+  if (typeof window !== 'undefined' && !(window as any).L) {
+    return <div className="h-full flex items-center justify-center text-muted-foreground">Map library loading...</div>;
+  }
   return (
     <div className="h-full flex flex-col md:flex-row">
       <div className="flex-1 md:flex-[2] bg-muted relative h-full w-full md:h-[60vh]">

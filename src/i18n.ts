@@ -60,4 +60,7 @@ i18n
       escapeValue: false,
     },
   });
+if (typeof window !== 'undefined') {
+  (window as any).i18nInstance = i18n;
+}
 export default i18n;

@@ -6,7 +6,6 @@ import NotificationCenter from './NotificationCenter';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { useShallow } from 'zustand/react/shallow';
 import { useHardwareManager } from '@/hooks/useHardwareManager';
-import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -26,7 +25,6 @@ const HardwareIcon = ({ type, className }: { type: string, className?: string })
 };
 const SystemTray: React.FC = () => {
   const [time, setTime] = useState(new Date());
-  const { t } = useTranslation();
   const notifications = useDesktopStore(useShallow((state) => state.notifications));
   const hardwareManager = useHardwareManager();
   const devices = hardwareManager?.devices || new Map();
