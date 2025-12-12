@@ -100,7 +100,8 @@ function runSetupCommands() {
     "bun add workbox-window@^7.1.0",
     "bun add react-webcam@^7.0.0",
     "bun add react-qr-code@^2.0.0",
-    "bun install i18next-browser-languagedetector"
+    "bun install i18next-browser-languagedetector",
+    "bun add date-fns@^4.1.0"
 ];
     
     if (commands.length === 0) {
