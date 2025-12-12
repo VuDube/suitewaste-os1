@@ -93,7 +93,7 @@ export class DeviceManager extends EventEmitter {
       } catch (e) {
         const msg = 'Could not get USB devices. This is expected if not on HTTPS or without user permission.';
         if (import.meta.env.DEV) {
-            errorReporter.report({ message: msg, level: 'warning', error: e });
+            errorReporter.report({ message: msg, level: 'warning', error: e, url: typeof window !== 'undefined' ? window.location.href : 'unknown', timestamp: new Date().toISOString() });
         } else {
             console.warn(msg, e);
         }
@@ -102,7 +102,11 @@ export class DeviceManager extends EventEmitter {
     if ('geolocation' in navigator && navigator.geolocation) {
       navigator.geolocation.watchPosition(
         p => this.emit('gps', { lat: p.coords.latitude, lng: p.coords.longitude }),
-        err => this.emit('error', `GPS Error: ${err.message}`)
+        err => {
+          const msg = `GPS Error: ${err.message}`;
+          errorReporter.report({ message: msg, level: 'error', error: err, url: typeof window !== 'undefined' ? window.location.href : 'unknown', timestamp: new Date().toISOString() });
+          this.emit('error', msg);
+        }
       );
     }
   }
