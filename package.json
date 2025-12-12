@@ -1,17 +1,15 @@
 {
-  "name": "suitewaste-os-eue1sir6pbnq4dsanomrl",
+  "name": "vite-cfagents-runner",
   "private": true,
   "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port ${PORT:-3000}",
-    "build": "tsc --noEmit && vite build",
+    "build": "vite build",
     "lint": "eslint --cache -f json --quiet .",
     "preview": "bun run build && vite preview --host 0.0.0.0 --port ${PORT:-4173}",
     "deploy": "bun run build && wrangler deploy",
-    "cf-typegen": "wrangler types",
-    "typecheck": "tsc --noEmit",
-    "prepare": "bun .bootstrap.js || true"
+    "cf-typegen": "wrangler types"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20250807.0",

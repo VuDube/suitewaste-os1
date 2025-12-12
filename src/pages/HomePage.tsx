@@ -7,7 +7,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from '@/lib/api';
 export function HomePage() {
   // Initialize theme
-  useTheme();
+  const { isDark, toggleTheme } = useTheme();
   return (
     <QueryClientProvider client={queryClient}>
       <div className="h-screen w-screen bg-background font-sans flex flex-col">
