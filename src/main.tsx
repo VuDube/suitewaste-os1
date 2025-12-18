@@ -22,11 +22,9 @@ const router = createBrowserRouter([
 // Do not touch this code
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ErrorBoundary>
-      <Suspense fallback="Loading...">
-        <RouterProvider router={router} />
-      </Suspense>
-    </ErrorBoundary>
+    <Suspense fallback="Loading...">
+      <RouterProvider router={router} />
+    </Suspense>
   </StrictMode>,
 )
 
