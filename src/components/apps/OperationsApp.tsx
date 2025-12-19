@@ -8,7 +8,6 @@ import { GripVertical, Loader2 } from 'lucide-react';
 import { useOperationsRoutes } from '@/lib/api';
 import { useSwipeable } from 'react-swipeable';
 import { toast } from 'sonner';
-// Mock data for tasks until API is ready
 const initialTasks: Record<string, { id: string; content: string }[]> = {
   unassigned: [
     { id: 'T001', content: 'Special pickup at Sandton City' },
@@ -58,7 +57,7 @@ const OperationsApp: React.FC = () => {
   const { data: routesData, isLoading: isLoadingRoutes } = useOperationsRoutes();
   const sensors = useSensors(useSensor(PointerSensor), useSensor(TouchSensor));
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstance = useRef<any | null>(null); // L.Map
+  const mapInstance = useRef<any | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   const [dragAnnouncement, setDragAnnouncement] = useState('');
   useEffect(() => {
@@ -91,7 +90,7 @@ const OperationsApp: React.FC = () => {
     if (mapNode && !mapInstance.current) {
       mapInstance.current = L.map(mapNode).setView(joburgCenter, 11);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(mapInstance.current);
     }
     if (mapInstance.current && routesData) {
@@ -99,7 +98,7 @@ const OperationsApp: React.FC = () => {
         if (layer instanceof L.Marker) mapInstance.current?.removeLayer(layer);
       });
       routesData.forEach(route => {
-        if (route.positions && route.positions.length > 0) {
+        if (route.positions?.[0]) {
           const pos: [number, number] = [route.positions[0].lat, route.positions[0].lng];
           L.marker(pos, { icon: truckIcon }).addTo(mapInstance.current!).bindPopup(route.name);
         }
@@ -108,6 +107,11 @@ const OperationsApp: React.FC = () => {
     const resizeObserver = new ResizeObserver(debouncedInvalidate);
     if (mapNode) resizeObserver.observe(mapNode);
     return () => {
+      // Proper Leaflet map cleanup to prevent memory leaks
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
       if (mapNode) resizeObserver.unobserve(mapNode);
     };
   }, [routesData]);
@@ -126,53 +130,50 @@ const OperationsApp: React.FC = () => {
     const overContainer = findContainer(over.id);
     if (!activeContainer || !overContainer) return;
     const activeTask = tasks[activeContainer].find(t => t.id === activeId);
-    const overContainerTitle = routesData?.find(r => r.id === overContainer)?.name || 'Unassigned Tasks';
     setTasks(prev => {
       const newTasks = { ...prev };
-      const activeItems = newTasks[activeContainer];
-      const overItems = newTasks[overContainer];
+      const activeItems = [...newTasks[activeContainer]];
+      const overItems = [...newTasks[overContainer]];
       const activeIndex = activeItems.findIndex(item => item.id === activeId);
+      const [movedItem] = activeItems.splice(activeIndex, 1);
+      newTasks[activeContainer] = activeItems;
       if (activeContainer === overContainer) {
         const overIndex = overItems.findIndex(item => item.id === overId);
-        const [movedItem] = activeItems.splice(activeIndex, 1);
         activeItems.splice(overIndex, 0, movedItem);
+        newTasks[activeContainer] = activeItems;
       } else {
-        const [movedItem] = activeItems.splice(activeIndex, 1);
-        const overIsContainer = overId in newTasks;
-        if (overIsContainer) {
-          newTasks[overId].push(movedItem);
+        if (overId in newTasks) {
+          newTasks[overId] = [...newTasks[overId], movedItem];
         } else {
           const overItemIndex = overItems.findIndex(item => item.id === overId);
           overItems.splice(overItemIndex, 0, movedItem);
+          newTasks[overContainer] = overItems;
         }
       }
       return newTasks;
     });
-    if (activeTask) {
-      setDragAnnouncement(`Task ${activeTask.content} moved to ${overContainerTitle}`);
-    }
+    if (activeTask) setDragAnnouncement(`Task ${activeTask.content} moved`);
   };
   const handleArchive = (taskId: string, containerId: string) => {
-    setTasks(prev => {
-      const newTasks = { ...prev };
-      newTasks[containerId] = newTasks[containerId].filter(task => task.id !== taskId);
-      return newTasks;
-    });
+    setTasks(prev => ({
+      ...prev,
+      [containerId]: prev[containerId].filter(task => task.id !== taskId)
+    }));
     toast.success('Task archived');
   };
   if (typeof window !== 'undefined' && !(window as any).L) {
-    return <div className="h-full flex items-center justify-center text-muted-foreground">Map library loading...</div>;
+    return <div className="h-full flex items-center justify-center text-muted-foreground"><Loader2 className="animate-spin mr-2" /> Loading maps...</div>;
   }
   return (
-    <div className="h-full flex flex-col md:flex-row">
-      <div className="flex-1 md:flex-[2] bg-muted relative h-full w-full md:h-[60vh]">
+    <div className="h-full flex flex-col md:flex-row overflow-hidden">
+      <div className="flex-1 md:flex-[2] bg-muted relative h-64 md:h-full">
         {isLoadingRoutes && <div className="absolute inset-0 flex items-center justify-center bg-black/20 z-10"><Loader2 className="h-8 w-8 animate-spin text-white" /></div>}
         <div ref={mapRef} className="h-full w-full" />
       </div>
-      <div className="flex-1 border-t md:border-t-0 md:border-l p-4 flex flex-col h-full md:h-auto">
+      <div className="flex-1 border-t md:border-t-0 md:border-l p-4 flex flex-col min-h-0 bg-background">
         <h2 className="text-xl font-bold mb-4">{t('apps.operations.taskBoard')}</h2>
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 flex-1 overflow-x-auto">
+          <div className="flex gap-4 flex-1 overflow-x-auto pb-4">
             <TaskColumn id="unassigned" title={t('apps.operations.unassignedTasks')} tasks={tasks.unassigned} onArchive={handleArchive} prefersReducedMotion={prefersReducedMotion} />
             {routesData?.map(route => (
               <TaskColumn key={route.id} id={route.id} title={route.name} tasks={tasks[route.id] || []} onArchive={handleArchive} prefersReducedMotion={prefersReducedMotion} />

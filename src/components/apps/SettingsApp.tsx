@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
 const wallpapers = [
-  { name: 'Default', url: '/wallpapers/default.jpg' },
-  { name: 'Green Field', url: '/wallpapers/green.jpg' },
-  { name: 'Earthy Tones', url: '/wallpapers/earth.jpg' },
+  { name: 'Forest Path', url: 'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&q=80&w=1600' },
+  { name: 'Sustainable Energy', url: 'https://images.unsplash.com/photo-1466611653911-954ff21b6748?auto=format&fit=crop&q=80&w=1600' },
+  { name: 'Clean Tech', url: 'https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?auto=format&fit=crop&q=80&w=1600' },
+  { name: 'Industrial Earth', url: 'https://images.unsplash.com/photo-1518173946687-a4c8a9b746f5?auto=format&fit=crop&q=80&w=1600' },
 ];
 const languages = [
   { code: 'en', name: 'English' },
@@ -84,18 +85,18 @@ const SettingsApp: React.FC = () => {
                   <AccordionTrigger className="px-6">{t('apps.settings.wallpaper')}</AccordionTrigger>
                   <AccordionContent className={`px-6 pb-6 ${prefersReducedMotion ? 'transition-none' : ''}`}>
                     <Label>{t('apps.settings.wallpaper')}</Label>
-                    <div className="grid grid-cols-3 gap-4 mt-2">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
                       {wallpapers.map((wp) => (
                         <button
                           key={wp.name}
-                          className={`relative rounded-md overflow-hidden border-2 ${
-                            wallpaper === wp.url ? 'border-primary' : 'border-transparent'
+                          className={`relative aspect-video rounded-md overflow-hidden border-2 transition-all ${
+                            wallpaper === wp.url ? 'border-primary ring-2 ring-primary/20' : 'border-transparent hover:border-muted'
                           }`}
                           onClick={() => setWallpaper(wp.url)}
                         >
-                          <img src={wp.url} alt={wp.name} className="w-full h-20 object-cover" />
+                          <img src={wp.url} alt={wp.name} className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-black/20 flex items-end justify-center">
-                            <p className="text-white text-xs pb-1">{wp.name}</p>
+                            <p className="text-white text-[10px] pb-1 font-medium">{wp.name}</p>
                           </div>
                         </button>
                       ))}

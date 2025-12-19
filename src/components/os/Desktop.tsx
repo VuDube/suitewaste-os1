@@ -2,7 +2,6 @@ import React, { useRef, useEffect } from 'react';
 import { useDesktopStore } from '@/stores/useDesktopStore';
 import { useAuthStore } from '@/stores/useAuthStore';
 import WindowManager from './WindowManager';
-import { useShallow } from 'zustand/react/shallow';
 import LoginApp from '@/components/apps/LoginApp';
 const SuiteWasteWallpaper: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -63,6 +62,17 @@ const Desktop: React.FC = () => {
     checkAuth();
   }, [checkAuth]);
   const visibleWindows = windows.filter((w) => w.desktopId === currentDesktopId);
+  // Strength the guard: Render nothing but the LoginApp if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <main className="flex-1 h-full w-full relative overflow-hidden bg-cover bg-center">
+        {!wallpaper && <SuiteWasteWallpaper />}
+        {wallpaper && <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: `url(${wallpaper})` }} />}
+        <div className="absolute inset-0 bg-black/40 z-0" />
+        <LoginApp />
+      </main>
+    );
+  }
   return (
     <main
       className="flex-1 h-full w-full relative overflow-hidden bg-cover bg-center"
@@ -70,7 +80,6 @@ const Desktop: React.FC = () => {
     >
       {!wallpaper && <SuiteWasteWallpaper />}
       <div className="absolute inset-0 bg-black/30 z-0" />
-      {!isAuthenticated && <LoginApp />}
       <div className="relative z-10 h-full w-full">
         <WindowManager windows={visibleWindows} />
       </div>

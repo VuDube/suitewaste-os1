@@ -3,12 +3,12 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
-import { Camera, Loader2, Link as LinkIcon, Share2, Sparkles } from 'lucide-react';
+import { Camera, Loader2, Link as LinkIcon, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMarketplaceListings, useClassifyImage, useCreateListing } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,7 +19,7 @@ const MarketplaceApp: React.FC = () => {
   const createListingMutation = useCreateListing();
   const [newItem, setNewItem] = useState({ name: '', price: '', category: '', image: '' });
   const [isCameraOpen, setIsCameraOpen] = useState(false);
-  const [isBlockchainOpen, setIsBlockchainOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,11 +37,12 @@ const MarketplaceApp: React.FC = () => {
     createListingMutation.mutate(formData, {
       onSuccess: () => {
         setNewItem({ name: '', price: '', category: '', image: '' });
+        setIsSheetOpen(false); // Only close on success
       }
     });
   };
   const startCamera = useCallback(async () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (navigator.mediaDevices?.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         if (videoRef.current) videoRef.current.srcObject = stream;
@@ -51,7 +52,7 @@ const MarketplaceApp: React.FC = () => {
     }
   }, []);
   const stopCamera = useCallback(() => {
-    if (videoRef.current && videoRef.current.srcObject) {
+    if (videoRef.current?.srcObject) {
       (videoRef.current.srcObject as MediaStream).getTracks().forEach(track => track.stop());
       videoRef.current.srcObject = null;
     }
@@ -81,12 +82,12 @@ const MarketplaceApp: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
           <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">{t('apps.marketplace.title')}</h1>
+              <h1 className="text-3xl font-bold text-foreground tracking-tight">{t('apps.marketplace.title')}</h1>
               <p className="text-muted-foreground">{t('apps.marketplace.description')}</p>
             </div>
-            <Sheet>
+            <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
               <SheetTrigger asChild><Button size="lg" className="shadow-lg"><Sparkles className="mr-2 h-4 w-4" /> {t('apps.marketplace.createListing')}</Button></SheetTrigger>
-              <SheetContent className="w-full sm:max-w-md">
+              <SheetContent className="w-full sm:max-w-md overflow-y-auto">
                 <SheetHeader><SheetTitle>{t('apps.marketplace.createListing')}</SheetTitle></SheetHeader>
                 <form onSubmit={handleCreateListing} className="py-6 space-y-6">
                   <div className="relative group">
@@ -101,8 +102,7 @@ const MarketplaceApp: React.FC = () => {
                           {classifyMutation.isPending && (
                             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex flex-col items-center justify-center">
                               <Loader2 className="h-10 w-10 text-primary animate-spin mb-2" />
-                              <span className="text-xs font-bold uppercase tracking-widest">{t('apps.marketplace.classifying')}...</span>
-                              <motion.div initial={{ top: '0%' }} animate={{ top: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="absolute left-0 right-0 h-1 bg-primary/50 shadow-[0_0_15px_hsl(var(--primary))]" />
+                              <span className="text-xs font-bold uppercase tracking-widest text-primary-foreground drop-shadow-md">{t('apps.marketplace.classifying')}...</span>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -114,10 +114,12 @@ const MarketplaceApp: React.FC = () => {
                     <div className="space-y-2"><Label htmlFor="price">Price (R)</Label><Input id="price" type="number" value={newItem.price} onChange={handleInputChange} placeholder="0.00" /></div>
                     <div className="space-y-2"><Label htmlFor="category">Category</Label><Input id="category" value={newItem.category} onChange={handleInputChange} placeholder="e.g., E-Waste" /></div>
                   </div>
-                  <SheetFooter><SheetClose asChild><Button type="submit" className="w-full h-12" disabled={createListingMutation.isPending || !newItem.name}>
-                    {createListingMutation.isPending ? <Loader2 className="animate-spin mr-2" /> : null}
-                    Submit Listing
-                  </Button></SheetClose></SheetFooter>
+                  <SheetFooter>
+                    <Button type="submit" className="w-full h-12" disabled={createListingMutation.isPending || !newItem.name}>
+                      {createListingMutation.isPending ? <Loader2 className="animate-spin mr-2" /> : null}
+                      Submit Listing
+                    </Button>
+                  </SheetFooter>
                 </form>
               </SheetContent>
             </Sheet>
@@ -126,7 +128,7 @@ const MarketplaceApp: React.FC = () => {
             {isLoadingListings ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-xl" />) :
               items?.map((item) => (
                 <motion.div key={item.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
-                  <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 group border-border/50">
+                  <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 group border-border/50 bg-card/50">
                     <div className="relative aspect-video overflow-hidden">
                       <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <div className="absolute top-2 right-2"><Badge variant="secondary" className="bg-background/80 backdrop-blur-md">{item.category}</Badge></div>
@@ -136,7 +138,7 @@ const MarketplaceApp: React.FC = () => {
                       <p className="text-2xl font-bold text-primary">{item.price}</p>
                     </CardContent>
                     <CardFooter className="p-4 pt-0">
-                      <Button variant="outline" className="w-full" onClick={() => setIsBlockchainOpen(true)}><LinkIcon size={14} className="mr-2" /> {t('apps.marketplace.viewOnChain')}</Button>
+                      <Button variant="outline" className="w-full text-xs font-semibold h-9"><LinkIcon size={14} className="mr-2" /> {t('apps.marketplace.viewOnChain')}</Button>
                     </CardFooter>
                   </Card>
                 </motion.div>

@@ -21,7 +21,7 @@ const TrainingApp: React.FC = () => {
   const updateProgressMutation = useUpdateProgress();
   const [activeCourse, setActiveCourse] = useState<TrainingProgress | null>(null);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [visibleRows, setVisibleRows] = useState(5);
+  const [visibleRows, setVisibleRows] = useState(10);
   const observerRef = useRef<IntersectionObserver | null>(null);
   const lastRowRef = useRef<HTMLTableRowElement | null>(null);
   useEffect(() => {
@@ -34,20 +34,20 @@ const TrainingApp: React.FC = () => {
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
     const target = entries[0];
     if (target.isIntersecting) {
-      setVisibleRows(prev => Math.min(prev + 5, leaderboardData?.length || 5));
+      setVisibleRows(prev => Math.min(prev + 10, leaderboardData?.length || 10));
     }
-  }, [leaderboardData]);
+  }, [leaderboardData?.length]);
   useEffect(() => {
-    observerRef.current = new IntersectionObserver(handleObserver, { threshold: 1.0 });
+    // Correctly re-attach observer whenever visibleRows or leaderboardData changes
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(handleObserver, { threshold: 0.1 });
     if (lastRowRef.current) {
       observerRef.current.observe(lastRowRef.current);
     }
     return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
+      if (observerRef.current) observerRef.current.disconnect();
     };
-  }, [handleObserver]);
+  }, [handleObserver, visibleRows, leaderboardData]);
   const earnedBadges = useMemo(() => courses?.filter(c => c.completed) || [], [courses]);
   const handleStartCourse = (courseId: number) => {
     const courseToStart = courses?.find(c => c.id === courseId);
@@ -80,13 +80,6 @@ const TrainingApp: React.FC = () => {
               title: 'Course Completed!',
               message: `You passed the quiz for "${activeCourse.title}" with a score of ${score}/${total}.`,
             });
-          } else {
-            addNotification({
-              appId: 'training',
-              icon: BookOpen,
-              title: 'Quiz Attempted',
-              message: `You scored ${score}/${total}. Please try again to pass.`,
-            });
           }
         }
       });
@@ -108,17 +101,19 @@ const TrainingApp: React.FC = () => {
                 <TabsTrigger value="badges">{t('apps.training.myBadges')}</TabsTrigger>
               </TabsList>
               <TabsContent value="courses" className="mt-4 space-y-4">
-                {isLoadingCourses ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />) :
+                {isLoadingCourses ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-24 w-full" />) :
                   courses?.map((course) => (
                     <Card key={course.id}>
                       <CardContent className="p-4 flex items-center justify-between">
                         <div>
-                          <CardTitle>{course.title}</CardTitle>
+                          <CardTitle className="text-lg">{course.title}</CardTitle>
                           <p className="text-sm text-muted-foreground">{course.duration}</p>
                         </div>
                         <div className="flex items-center gap-2">
                           {course.completed ? (
-                            <span className="flex items-center gap-1 text-green-600 text-sm font-medium"><CheckCircle size={16} /> {t('apps.training.completed')}</span>
+                            <Badge variant="outline" className="text-green-600 gap-1 border-green-200 bg-green-50">
+                              <CheckCircle size={12} /> {t('apps.training.completed')}
+                            </Badge>
                           ) : (
                             <Button size="sm" onClick={() => handleStartCourse(course.id)} disabled={updateProgressMutation.isPending}>
                               {updateProgressMutation.isPending && updateProgressMutation.variables?.courseId === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle size={16} className="mr-2" />}
@@ -132,35 +127,36 @@ const TrainingApp: React.FC = () => {
               </TabsContent>
               <TabsContent value="leaderboard">
                 <Card>
-                  <CardHeader><CardTitle className="flex items-center gap-2"><Trophy /> {t('apps.training.leaderboard')}</CardTitle></CardHeader>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="text-yellow-500" /> {t('apps.training.leaderboard')}</CardTitle></CardHeader>
                   <CardContent>
                     <Table>
-                      <TableHeader><TableRow><TableHead className="w-[50px]">{t('apps.training.rank')}</TableHead><TableHead>{t('apps.training.user')}</TableHead><TableHead className="text-right">{t('apps.training.points')}</TableHead></TableRow></TableHeader>
+                      <TableHeader><TableRow><TableHead className="w-[80px]">{t('apps.training.rank')}</TableHead><TableHead>{t('apps.training.user')}</TableHead><TableHead className="text-right">{t('apps.training.points')}</TableHead></TableRow></TableHeader>
                       <TableBody>
-                        {isLoadingLeaderboard ? Array.from({ length: 4 }).map((_, i) => <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell className="text-right"><Skeleton className="h-4 w-12" /></TableCell></TableRow>) :
+                        {isLoadingLeaderboard ? Array.from({ length: 5 }).map((_, i) => <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell className="text-right"><Skeleton className="h-4 w-12" /></TableCell></TableRow>) :
                           leaderboardData?.slice(0, visibleRows).map((user, index) => (
-                            <TableRow key={user.rank} ref={index === visibleRows - 1 ? lastRowRef : null} className={user.name === 'You' ? 'bg-accent' : ''}>
-                              <TableCell className="font-medium">{user.rank}</TableCell>
-                              <TableCell><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={user.avatar} alt={user.name} /><AvatarFallback>{user.name.charAt(0)}</AvatarFallback></Avatar><span>{user.name}</span></div></TableCell>
-                              <TableCell className="text-right">{user.points}</TableCell>
+                            <TableRow key={user.rank} ref={index === visibleRows - 1 ? lastRowRef : null} className={user.name === 'You' ? 'bg-primary/5' : ''}>
+                              <TableCell className="font-bold">{user.rank}</TableCell>
+                              <TableCell><div className="flex items-center gap-3"><Avatar className="h-8 w-8 border"><AvatarImage src={user.avatar} /><AvatarFallback>{user.name.charAt(0)}</AvatarFallback></Avatar><span className="font-medium">{user.name}</span></div></TableCell>
+                              <TableCell className="text-right font-mono">{user.points}</TableCell>
                             </TableRow>
                           ))}
                       </TableBody>
                     </Table>
-                    {leaderboardData && visibleRows < leaderboardData.length && <div aria-live="polite" className="sr-only">More rows loaded</div>}
                   </CardContent>
                 </Card>
               </TabsContent>
               <TabsContent value="badges">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {earnedBadges.map(course => (
-                    <Card key={course.id} className="flex flex-col items-center justify-center p-4 text-center">
-                      <Award size={48} className={course.badge.color} />
-                      <p className="font-semibold mt-2">{course.badge.name}</p>
-                      <p className="text-xs text-muted-foreground">{t('apps.training.earnedOn')} {new Date().toLocaleDateString()}</p>
+                    <Card key={course.id} className="flex flex-col items-center justify-center p-6 text-center hover:shadow-md transition-shadow">
+                      <div className="p-4 bg-primary/5 rounded-full mb-4">
+                        <Award size={48} className={course.badge.color} />
+                      </div>
+                      <p className="font-bold">{course.badge.name}</p>
+                      <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-wider">{t('apps.training.earnedOn')} {new Date().toLocaleDateString()}</p>
                     </Card>
                   ))}
-                  {earnedBadges.length === 0 && <p className="col-span-full text-center text-muted-foreground py-8">{t('apps.training.noBadges')}</p>}
+                  {earnedBadges.length === 0 && <p className="col-span-full text-center text-muted-foreground py-12 bg-muted/20 rounded-lg border-dashed border-2">{t('apps.training.noBadges')}</p>}
                 </div>
               </TabsContent>
             </Tabs>
