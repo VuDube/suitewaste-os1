@@ -8,38 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from 'react-i18next';
-import { Camera, Loader2, Link as LinkIcon, Share2 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Camera, Loader2, Link as LinkIcon, Share2, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useMarketplaceListings, useClassifyImage, useCreateListing } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
-const BlockchainVisualization = () => {
-  const { t } = useTranslation();
-  const blocks = [
-    { id: '0', title: t('apps.marketplace.genesisBlock'), hash: '0xabc...' },
-    { id: '1', title: t('apps.marketplace.tx') + ' #1', hash: '0xdef...' },
-    { id: '2', title: t('apps.marketplace.tx') + ' #2', hash: '0xghi...' },
-    { id: '3', title: t('apps.marketplace.tx') + ' #3', hash: '0xjkl...' },
-  ];
-  return (
-    <div className="p-6">
-      <div className="flex items-center justify-center space-x-2">
-        {blocks.map((block, index) => (
-          <React.Fragment key={block.id}>
-            <motion.div initial={{ opacity: 0, scale: 0.5 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.5, delay: index * 0.3 }} className="bg-secondary p-3 rounded-lg text-center w-32">
-              <p className="font-bold text-sm flex items-center justify-center gap-1"><LinkIcon size={12} /> {block.title}</p>
-              <p className="text-xs text-muted-foreground truncate">{block.hash}</p>
-            </motion.div>
-            {index < blocks.length - 1 && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: index * 0.3 + 0.2 }}>
-                <Share2 className="text-muted-foreground" />
-              </motion.div>
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-    </div>
-  );
-};
 const MarketplaceApp: React.FC = () => {
   const { t } = useTranslation();
   const { data: items, isLoading: isLoadingListings } = useMarketplaceListings();
@@ -61,7 +33,6 @@ const MarketplaceApp: React.FC = () => {
     formData.append('name', newItem.name);
     formData.append('price', newItem.price);
     formData.append('category', newItem.category);
-    // You would handle file upload here instead of base64 string for a real app
     formData.append('image', newItem.image);
     createListingMutation.mutate(formData, {
       onSuccess: () => {
@@ -75,7 +46,6 @@ const MarketplaceApp: React.FC = () => {
         const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
         if (videoRef.current) videoRef.current.srcObject = stream;
       } catch (err) {
-        console.error("Error accessing camera: ", err);
         setIsCameraOpen(false);
       }
     }
@@ -100,63 +70,93 @@ const MarketplaceApp: React.FC = () => {
       setIsCameraOpen(false);
       classifyMutation.mutate({ image: base64Image }, {
         onSuccess: (data) => {
-          setNewItem(prev => ({ ...prev, name: data.name, category: data.category, price: data.estimatedPrice }));
+          setNewItem(prev => ({ ...prev, name: data.name, category: data.category, price: data.estimatedPrice.replace('R ', '') }));
         }
       });
     }
   };
   return (
-    <>
+    <div className="h-full bg-background">
       <ScrollArea className="h-full">
-        <div className="p-8">
-          <header className="flex justify-between items-center mb-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-10">
+          <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
-              <h1 className="text-3xl font-bold">{t('apps.marketplace.title')}</h1>
+              <h1 className="text-3xl font-bold text-foreground">{t('apps.marketplace.title')}</h1>
               <p className="text-muted-foreground">{t('apps.marketplace.description')}</p>
             </div>
             <Sheet>
-              <SheetTrigger asChild><Button>{t('apps.marketplace.createListing')}</Button></SheetTrigger>
-              <SheetContent>
+              <SheetTrigger asChild><Button size="lg" className="shadow-lg"><Sparkles className="mr-2 h-4 w-4" /> {t('apps.marketplace.createListing')}</Button></SheetTrigger>
+              <SheetContent className="w-full sm:max-w-md">
                 <SheetHeader><SheetTitle>{t('apps.marketplace.createListing')}</SheetTitle></SheetHeader>
-                <form onSubmit={handleCreateListing} className="py-4 space-y-4">
-                  <Button type="button" variant="outline" className="w-full" onClick={() => setIsCameraOpen(true)}><Camera className="mr-2 h-4 w-4" /> {t('apps.marketplace.scanWithCamera')}</Button>
-                  {newItem.image && <img src={newItem.image} alt="Captured item" className="rounded-md border" />}
-                  {classifyMutation.isPending && <div className="flex items-center justify-center text-muted-foreground"><Loader2 className="mr-2 h-4 w-4 animate-spin" />{t('apps.marketplace.classifying')}...</div>}
-                  <div className="space-y-2"><Label htmlFor="name">Item Name</Label><Input id="name" value={newItem.name} onChange={handleInputChange} placeholder="e.g., Used Keyboards" /></div>
-                  <div className="space-y-2"><Label htmlFor="price">Price (R)</Label><Input id="price" type="number" value={newItem.price} onChange={handleInputChange} placeholder="e.g., 500" /></div>
-                  <div className="space-y-2"><Label htmlFor="category">Category</Label><Input id="category" value={newItem.category} onChange={handleInputChange} placeholder="e.g., E-Waste" /></div>
-                  <SheetFooter><SheetClose asChild><Button type="submit" disabled={createListingMutation.isPending}>Create</Button></SheetClose></SheetFooter>
+                <form onSubmit={handleCreateListing} className="py-6 space-y-6">
+                  <div className="relative group">
+                    <Button type="button" variant="outline" className="w-full h-32 border-dashed border-2 flex flex-col gap-2" onClick={() => setIsCameraOpen(true)}>
+                      <Camera className="h-8 w-8 text-muted-foreground group-hover:text-primary transition-colors" />
+                      <span className="text-sm">{t('apps.marketplace.scanWithCamera')}</span>
+                    </Button>
+                    {newItem.image && (
+                      <div className="mt-4 relative rounded-xl overflow-hidden border">
+                        <img src={newItem.image} alt="Captured" className="w-full aspect-video object-cover" />
+                        <AnimatePresence>
+                          {classifyMutation.isPending && (
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-primary/20 backdrop-blur-sm flex flex-col items-center justify-center">
+                              <Loader2 className="h-10 w-10 text-primary animate-spin mb-2" />
+                              <span className="text-xs font-bold uppercase tracking-widest">{t('apps.marketplace.classifying')}...</span>
+                              <motion.div initial={{ top: '0%' }} animate={{ top: '100%' }} transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }} className="absolute left-0 right-0 h-1 bg-primary/50 shadow-[0_0_15px_hsl(var(--primary))]" />
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                  </div>
+                  <div className="space-y-4">
+                    <div className="space-y-2"><Label htmlFor="name">Item Name</Label><Input id="name" value={newItem.name} onChange={handleInputChange} placeholder="e.g., Industrial Scrap" /></div>
+                    <div className="space-y-2"><Label htmlFor="price">Price (R)</Label><Input id="price" type="number" value={newItem.price} onChange={handleInputChange} placeholder="0.00" /></div>
+                    <div className="space-y-2"><Label htmlFor="category">Category</Label><Input id="category" value={newItem.category} onChange={handleInputChange} placeholder="e.g., E-Waste" /></div>
+                  </div>
+                  <SheetFooter><SheetClose asChild><Button type="submit" className="w-full h-12" disabled={createListingMutation.isPending || !newItem.name}>
+                    {createListingMutation.isPending ? <Loader2 className="animate-spin mr-2" /> : null}
+                    Submit Listing
+                  </Button></SheetClose></SheetFooter>
                 </form>
               </SheetContent>
             </Sheet>
           </header>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {isLoadingListings ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-64" />) :
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {isLoadingListings ? Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-xl" />) :
               items?.map((item) => (
-                <Card key={item.id} className="overflow-hidden flex flex-col">
-                  <CardHeader className="p-0"><img src={item.image} alt={item.name} className="w-full h-40 object-cover" /></CardHeader>
-                  <CardContent className="p-4 flex-1"><Badge variant="secondary" className="mb-2">{item.category}</Badge><CardTitle className="text-lg">{item.name}</CardTitle></CardContent>
-                  <CardFooter className="flex justify-between items-center p-4 pt-0"><span className="font-bold text-lg">{item.price}</span><Button variant="outline" size="sm" onClick={() => setIsBlockchainOpen(true)}>{t('apps.marketplace.viewOnBlockchain')}</Button></CardFooter>
-                </Card>
+                <motion.div key={item.id} layout initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}>
+                  <Card className="overflow-hidden h-full flex flex-col hover:shadow-xl transition-all duration-300 group border-border/50">
+                    <div className="relative aspect-video overflow-hidden">
+                      <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                      <div className="absolute top-2 right-2"><Badge variant="secondary" className="bg-background/80 backdrop-blur-md">{item.category}</Badge></div>
+                    </div>
+                    <CardContent className="p-4 flex-1">
+                      <CardTitle className="text-lg mb-2 line-clamp-1">{item.name}</CardTitle>
+                      <p className="text-2xl font-bold text-primary">{item.price}</p>
+                    </CardContent>
+                    <CardFooter className="p-4 pt-0">
+                      <Button variant="outline" className="w-full" onClick={() => setIsBlockchainOpen(true)}><LinkIcon size={14} className="mr-2" /> {t('apps.marketplace.viewOnChain')}</Button>
+                    </CardFooter>
+                  </Card>
+                </motion.div>
               ))}
           </div>
         </div>
       </ScrollArea>
       <Dialog open={isCameraOpen} onOpenChange={(open) => { setIsCameraOpen(open); if (open) startCamera(); else stopCamera(); }}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader><DialogTitle>{t('apps.marketplace.scanWithCamera')}</DialogTitle><DialogDescription>{t('apps.marketplace.cameraDescription')}</DialogDescription></DialogHeader>
-          <video ref={videoRef} autoPlay playsInline className="w-full h-auto rounded-md bg-black"></video>
-          <canvas ref={canvasRef} className="hidden"></canvas>
-          <DialogFooter><Button onClick={handleCapture}>{t('apps.marketplace.capture')}</Button></DialogFooter>
+          <div className="relative aspect-square rounded-xl overflow-hidden bg-black flex items-center justify-center">
+             <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+             <div className="absolute inset-0 border-2 border-primary/30 rounded-xl pointer-events-none" />
+             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 border border-white/20 rounded-lg pointer-events-none" />
+          </div>
+          <canvas ref={canvasRef} className="hidden" />
+          <DialogFooter><Button size="lg" className="w-full rounded-full h-14" onClick={handleCapture}><Camera size={20} className="mr-2" /> {t('apps.marketplace.capture')}</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-      <Dialog open={isBlockchainOpen} onOpenChange={setIsBlockchainOpen}>
-        <DialogContent>
-          <DialogHeader><DialogTitle>{t('apps.marketplace.transactionHistory')}</DialogTitle><DialogDescription>{t('apps.marketplace.blockchainDescription')}</DialogDescription></DialogHeader>
-          <BlockchainVisualization />
-        </DialogContent>
-      </Dialog>
-    </>
+    </div>
   );
 };
 export default MarketplaceApp;
