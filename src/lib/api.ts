@@ -4,8 +4,11 @@ import { useAuthStore } from '@/stores/useAuthStore';
 import {
   operationsRoutesSchema,
   complianceChecklistSchema,
+  complianceItemSchema,
   paymentsTransactionsSchema,
+  paymentTransactionSchema,
   marketplaceListingsSchema,
+  marketplaceListingSchema,
   trainingProgressSchema,
   leaderboardSchema,
   OperationsRoute,

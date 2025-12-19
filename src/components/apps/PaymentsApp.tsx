@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useDesktopStore } from '@/stores/useDesktopStore';
-import { CreditCard, QrCode, AlertCircle, ArrowRight, Wallet, History, SendHorizontal } from 'lucide-react';
+import { CreditCard, QrCode, AlertCircle, ArrowRight, Wallet, History, SendHorizontal, Loader2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePaymentsTransactions, useCreatePayment } from '@/lib/api';

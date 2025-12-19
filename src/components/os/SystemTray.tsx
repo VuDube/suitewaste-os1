@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, Printer, Camera, Satellite, Loader2 } from 'lucide-react';
+import { Bell, Printer, Camera, Satellite, Loader2, Wifi, WifiOff } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import NotificationCenter from './NotificationCenter';
@@ -25,21 +25,28 @@ const HardwareIcon = ({ type, className }: { type: string, className?: string })
 };
 const SystemTray: React.FC = () => {
   const [time, setTime] = useState(new Date());
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const notifications = useDesktopStore(useShallow((state) => state.notifications));
   const hardwareManager = useHardwareManager();
   const devices = hardwareManager?.devices || new Map();
   const status = hardwareManager?.status || 'idle';
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
   useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     setPrefersReducedMotion(mediaQuery.matches);
     const handleChange = () => setPrefersReducedMotion(mediaQuery.matches);
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000 * 60); // Update every minute
-    return () => clearInterval(timer);
+    const timer = setInterval(() => setTime(new Date()), 1000 * 60);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+      mediaQuery.removeEventListener('change', handleChange);
+      clearInterval(timer);
+    };
   }, []);
   const formattedTime = time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   const formattedDate = time.toLocaleDateString([], { year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -81,6 +88,22 @@ const SystemTray: React.FC = () => {
     <div role="region" aria-labelledby="system-tray-label" className="flex items-center gap-2 pr-2">
       <span id="system-tray-label" className="sr-only">System Tray</span>
       <div className="flex items-center gap-2">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="p-1">
+                {isOnline ? (
+                  <Wifi size={16} className="text-green-500" />
+                ) : (
+                  <WifiOff size={16} className="text-destructive animate-pulse" />
+                )}
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isOnline ? 'Online - All systems connected' : 'Offline - Using local cache'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
         {status === 'scanning' && <Loader2 className="h-4 w-4 animate-spin" />}
         <TooltipProvider>
           <Sheet>
@@ -95,11 +118,16 @@ const SystemTray: React.FC = () => {
               </SheetHeader>
               <div className="py-4">
                 {Array.from(devices.values()).map(d => (
-                  <div key={d.id} className="mb-2">
-                    <p className="font-semibold">{d.type.toUpperCase()}</p>
-                    <p>Status: {d.status}</p>
+                  <div key={d.id} className="mb-4 border-b pb-4 last:border-0">
+                    <p className="font-semibold flex items-center gap-2">
+                      <HardwareIcon type={d.type} className="w-5 h-5" />
+                      {d.type.toUpperCase()}
+                    </p>
+                    <p className="text-sm text-muted-foreground">Status: <span className={cn(d.status === 'connected' ? 'text-green-600' : 'text-destructive')}>{d.status}</span></p>
+                    {d.battery && <p className="text-sm">Battery: {d.battery}%</p>}
                   </div>
                 ))}
+                {devices.size === 0 && <p className="text-center text-muted-foreground">No hardware detected</p>}
               </div>
             </SheetContent>
           </Sheet>

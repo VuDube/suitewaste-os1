@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useComplianceChecklist, useUpdateChecklistItem, useComplianceAudit } from '@/lib/api';
 import { Skeleton } from '@/components/ui/skeleton';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Badge } from '@/components/ui/badge';
 const APP_ID = 'compliance';
 const ComplianceApp: React.FC = () => {
   const { t } = useTranslation();

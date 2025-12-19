@@ -74,110 +74,112 @@ const DashboardApp: React.FC = () => {
   }, []);
   return (
     <ScrollArea className="h-full">
-      <div className="p-4 md:p-8 space-y-8">
-        <header>
-          <h1 className="text-3xl font-bold">{t('apps.dashboard.title')}</h1>
-          <p className="text-muted-foreground">{t('apps.dashboard.description')}</p>
-        </header>
-        <motion.div
-          className="grid gap-4 md:grid-cols-3"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {isLoading ? Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i} className="animate-pulse">
-              <CardHeader><Skeleton className="h-5 w-3/4" style={{ animationDelay: `${i * 0.1}s` }} /></CardHeader>
-              <CardContent><Skeleton className="h-8 w-1/2" style={{ animationDelay: `${i * 0.1}s` }} /><Skeleton className="h-4 w-1/3 mt-2" style={{ animationDelay: `${i * 0.1}s` }} /></CardContent>
-            </Card>
-          )) : kpiData.map((kpi, index) => (
-            <motion.div key={index} variants={itemVariants}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="py-8 md:py-10 lg:py-12 space-y-8">
+          <header>
+            <h1 className="text-3xl font-bold">{t('apps.dashboard.title')}</h1>
+            <p className="text-muted-foreground">{t('apps.dashboard.description')}</p>
+          </header>
+          <motion.div
+            className="grid gap-4 md:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {isLoading ? Array.from({ length: 3 }).map((_, i) => (
+              <Card key={i} className="animate-pulse">
+                <CardHeader><Skeleton className="h-5 w-3/4" style={{ animationDelay: `${i * 0.1}s` }} /></CardHeader>
+                <CardContent><Skeleton className="h-8 w-1/2" style={{ animationDelay: `${i * 0.1}s` }} /><Skeleton className="h-4 w-1/3 mt-2" style={{ animationDelay: `${i * 0.1}s` }} /></CardContent>
+              </Card>
+            )) : kpiData.map((kpi, index) => (
+              <motion.div key={index} variants={itemVariants}>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">{t(kpi.title)}</CardTitle>
+                    <kpi.icon className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{kpi.value}</div>
+                    <p className="text-xs text-muted-foreground text-green-600">{kpi.change} from last month</p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+          <motion.div
+            className="grid gap-8 md:grid-cols-1 lg:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            <motion.div variants={itemVariants} className="lg:col-span-2">
               <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">{t(kpi.title)}</CardTitle>
-                  <kpi.icon className="h-4 w-4 text-muted-foreground" />
+                <CardHeader>
+                  <CardTitle>{t('apps.dashboard.collectionTrend')}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-2xl font-bold">{kpi.value}</div>
-                  <p className="text-xs text-muted-foreground text-green-600">{kpi.change} from last month</p>
+                  {isLoading ? <Skeleton className="w-full h-[300px] animate-pulse" /> : (
+                    <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                      <LineChart data={collectionTrendData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend />
+                        <Line type="monotone" dataKey="tons" name={t('charts.tonsCollected')} stroke="#2E7D32" strokeWidth={2} activeDot={{ r: 8 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
-          ))}
-        </motion.div>
-        <motion.div
-          className="grid gap-8 md:grid-cols-1 lg:grid-cols-3"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          <motion.div variants={itemVariants} className="lg:col-span-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('apps.dashboard.collectionTrend')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? <Skeleton className="w-full h-[300px] animate-pulse" /> : (
-                  <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-                    <LineChart data={collectionTrendData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="name" />
-                      <YAxis />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Line type="monotone" dataKey="tons" name={t('charts.tonsCollected')} stroke="#2E7D32" strokeWidth={2} activeDot={{ r: 8 }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
+            <motion.div variants={itemVariants}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('apps.dashboard.aiInsights')}</CardTitle>
+                  <p className="text-sm text-muted-foreground">{t('apps.dashboard.aiInsightsDesc')}</p>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isLoading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />) :
+                    aiInsightsData.map((insight, index) => (
+                      <motion.div
+                        key={index}
+                        className="flex items-start gap-3"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: index * 0.2 }}
+                      >
+                        <insight.icon className={`h-5 w-5 mt-1 flex-shrink-0 ${insight.color}`} />
+                        <p className="text-sm">{t(insight.text)}</p>
+                      </motion.div>
+                    ))}
+                </CardContent>
+              </Card>
+            </motion.div>
+            <motion.div variants={itemVariants} className="lg:col-span-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('apps.dashboard.composition')}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isLoading ? <Skeleton className="w-full h-[300px] animate-pulse" /> : (
+                    <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                      <PieChart>
+                        <Pie data={wasteCompositionData} cx="50%" cy="50%" labelLine={false} outerRadius={isMobile ? 80 : 100} fill="#8884d8" dataKey="value">
+                          {wasteCompositionData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </motion.div>
           </motion.div>
-          <motion.div variants={itemVariants}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('apps.dashboard.aiInsights')}</CardTitle>
-                <p className="text-sm text-muted-foreground">{t('apps.dashboard.aiInsightsDesc')}</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {isLoading ? Array.from({ length: 2 }).map((_, i) => <Skeleton key={i} className="h-12 w-full animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />) :
-                  aiInsightsData.map((insight, index) => (
-                    <motion.div
-                      key={index}
-                      className="flex items-start gap-3"
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.2 }}
-                    >
-                      <insight.icon className={`h-5 w-5 mt-1 flex-shrink-0 ${insight.color}`} />
-                      <p className="text-sm">{t(insight.text)}</p>
-                    </motion.div>
-                  ))}
-              </CardContent>
-            </Card>
-          </motion.div>
-          <motion.div variants={itemVariants} className="lg:col-span-3">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('apps.dashboard.composition')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoading ? <Skeleton className="w-full h-[300px] animate-pulse" /> : (
-                  <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-                    <PieChart>
-                      <Pie data={wasteCompositionData} cx="50%" cy="50%" labelLine={false} outerRadius={isMobile ? 80 : 100} fill="#8884d8" dataKey="value">
-                        {wasteCompositionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
     </ScrollArea>
   );

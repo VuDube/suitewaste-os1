@@ -95,74 +95,76 @@ const TrainingApp: React.FC = () => {
   return (
     <>
       <ScrollArea className="h-full">
-        <div className="p-8">
-          <header className="mb-8">
-            <h1 className="text-3xl font-bold">{t('apps.training.title')}</h1>
-            <p className="text-muted-foreground">{t('apps.training.description')}</p>
-          </header>
-          <Tabs defaultValue="courses">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="courses">{t('apps.training.courses')}</TabsTrigger>
-              <TabsTrigger value="leaderboard">{t('apps.training.leaderboard')}</TabsTrigger>
-              <TabsTrigger value="badges">{t('apps.training.myBadges')}</TabsTrigger>
-            </TabsList>
-            <TabsContent value="courses" className="mt-4 space-y-4">
-              {isLoadingCourses ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />) :
-                courses?.map((course) => (
-                  <Card key={course.id}>
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div>
-                        <CardTitle>{course.title}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{course.duration}</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {course.completed ? (
-                          <span className="flex items-center gap-1 text-green-600 text-sm font-medium"><CheckCircle size={16} /> {t('apps.training.completed')}</span>
-                        ) : (
-                          <Button size="sm" onClick={() => handleStartCourse(course.id)} disabled={updateProgressMutation.isPending}>
-                            {updateProgressMutation.isPending && updateProgressMutation.variables?.courseId === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle size={16} className="mr-2" />}
-                            {course.started ? t('apps.training.resume') : t('apps.training.start')}
-                          </Button>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-            </TabsContent>
-            <TabsContent value="leaderboard">
-              <Card>
-                <CardHeader><CardTitle className="flex items-center gap-2"><Trophy /> {t('apps.training.leaderboard')}</CardTitle></CardHeader>
-                <CardContent>
-                  <Table>
-                    <TableHeader><TableRow><TableHead className="w-[50px]">{t('apps.training.rank')}</TableHead><TableHead>{t('apps.training.user')}</TableHead><TableHead className="text-right">{t('apps.training.points')}</TableHead></TableRow></TableHeader>
-                    <TableBody>
-                      {isLoadingLeaderboard ? Array.from({ length: 4 }).map((_, i) => <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell className="text-right"><Skeleton className="h-4 w-12" /></TableCell></TableRow>) :
-                        leaderboardData?.slice(0, visibleRows).map((user, index) => (
-                          <TableRow key={user.rank} ref={index === visibleRows - 1 ? lastRowRef : null} className={user.name === 'You' ? 'bg-accent' : ''}>
-                            <TableCell className="font-medium">{user.rank}</TableCell>
-                            <TableCell><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={user.avatar} alt={user.name} /><AvatarFallback>{user.name.charAt(0)}</AvatarFallback></Avatar><span>{user.name}</span></div></TableCell>
-                            <TableCell className="text-right">{user.points}</TableCell>
-                          </TableRow>
-                        ))}
-                    </TableBody>
-                  </Table>
-                  {leaderboardData && visibleRows < leaderboardData.length && <div aria-live="polite">More rows loaded</div>}
-                </CardContent>
-              </Card>
-            </TabsContent>
-            <TabsContent value="badges">
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {earnedBadges.map(course => (
-                  <Card key={course.id} className="flex flex-col items-center justify-center p-4 text-center">
-                    <Award size={48} className={course.badge.color} />
-                    <p className="font-semibold mt-2">{course.badge.name}</p>
-                    <p className="text-xs text-muted-foreground">{t('apps.training.earnedOn')} {new Date().toLocaleDateString()}</p>
-                  </Card>
-                ))}
-                {earnedBadges.length === 0 && <p className="col-span-full text-center text-muted-foreground py-8">{t('apps.training.noBadges')}</p>}
-              </div>
-            </TabsContent>
-          </Tabs>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="py-8 md:py-10 lg:py-12">
+            <header className="mb-8">
+              <h1 className="text-3xl font-bold">{t('apps.training.title')}</h1>
+              <p className="text-muted-foreground">{t('apps.training.description')}</p>
+            </header>
+            <Tabs defaultValue="courses">
+              <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="courses">{t('apps.training.courses')}</TabsTrigger>
+                <TabsTrigger value="leaderboard">{t('apps.training.leaderboard')}</TabsTrigger>
+                <TabsTrigger value="badges">{t('apps.training.myBadges')}</TabsTrigger>
+              </TabsList>
+              <TabsContent value="courses" className="mt-4 space-y-4">
+                {isLoadingCourses ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-20" />) :
+                  courses?.map((course) => (
+                    <Card key={course.id}>
+                      <CardContent className="p-4 flex items-center justify-between">
+                        <div>
+                          <CardTitle>{course.title}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{course.duration}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {course.completed ? (
+                            <span className="flex items-center gap-1 text-green-600 text-sm font-medium"><CheckCircle size={16} /> {t('apps.training.completed')}</span>
+                          ) : (
+                            <Button size="sm" onClick={() => handleStartCourse(course.id)} disabled={updateProgressMutation.isPending}>
+                              {updateProgressMutation.isPending && updateProgressMutation.variables?.courseId === course.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle size={16} className="mr-2" />}
+                              {course.started ? t('apps.training.resume') : t('apps.training.start')}
+                            </Button>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+              </TabsContent>
+              <TabsContent value="leaderboard">
+                <Card>
+                  <CardHeader><CardTitle className="flex items-center gap-2"><Trophy /> {t('apps.training.leaderboard')}</CardTitle></CardHeader>
+                  <CardContent>
+                    <Table>
+                      <TableHeader><TableRow><TableHead className="w-[50px]">{t('apps.training.rank')}</TableHead><TableHead>{t('apps.training.user')}</TableHead><TableHead className="text-right">{t('apps.training.points')}</TableHead></TableRow></TableHeader>
+                      <TableBody>
+                        {isLoadingLeaderboard ? Array.from({ length: 4 }).map((_, i) => <TableRow key={i}><TableCell><Skeleton className="h-4 w-4" /></TableCell><TableCell><Skeleton className="h-4 w-32" /></TableCell><TableCell className="text-right"><Skeleton className="h-4 w-12" /></TableCell></TableRow>) :
+                          leaderboardData?.slice(0, visibleRows).map((user, index) => (
+                            <TableRow key={user.rank} ref={index === visibleRows - 1 ? lastRowRef : null} className={user.name === 'You' ? 'bg-accent' : ''}>
+                              <TableCell className="font-medium">{user.rank}</TableCell>
+                              <TableCell><div className="flex items-center gap-2"><Avatar className="h-8 w-8"><AvatarImage src={user.avatar} alt={user.name} /><AvatarFallback>{user.name.charAt(0)}</AvatarFallback></Avatar><span>{user.name}</span></div></TableCell>
+                              <TableCell className="text-right">{user.points}</TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                    {leaderboardData && visibleRows < leaderboardData.length && <div aria-live="polite" className="sr-only">More rows loaded</div>}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+              <TabsContent value="badges">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {earnedBadges.map(course => (
+                    <Card key={course.id} className="flex flex-col items-center justify-center p-4 text-center">
+                      <Award size={48} className={course.badge.color} />
+                      <p className="font-semibold mt-2">{course.badge.name}</p>
+                      <p className="text-xs text-muted-foreground">{t('apps.training.earnedOn')} {new Date().toLocaleDateString()}</p>
+                    </Card>
+                  ))}
+                  {earnedBadges.length === 0 && <p className="col-span-full text-center text-muted-foreground py-8">{t('apps.training.noBadges')}</p>}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
       </ScrollArea>
       <Dialog open={!!activeCourse} onOpenChange={(isOpen) => !isOpen && setActiveCourse(null)}>
