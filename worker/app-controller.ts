@@ -1,11 +1,20 @@
 import { DurableObject } from 'cloudflare:workers';
 import type { SessionInfo } from './types';
 import type { Env } from './core-utils';
-// 🤖 AI Extension Point: Add session management features
+export interface AuditEntry {
+  id: string;
+  userId: string;
+  timestamp: number;
+  action: string;
+  entity: string;
+  before: string;
+  after: string;
+}
 export class AppController extends DurableObject<Env> {
   private sessions = new Map<string, SessionInfo>();
   private loaded = false;
   private appData: Record<string, any> = {};
+  private auditLogs: AuditEntry[] = [];
   private loadedAppData = false;
   constructor(ctx: DurableObjectState, env: Env) {
     super(ctx, env);
@@ -18,6 +27,7 @@ export class AppController extends DurableObject<Env> {
     }
     if (!this.loadedAppData) {
       this.appData = await this.ctx.storage.get('appData') || {};
+      this.auditLogs = await this.ctx.storage.get('auditLogs') || [];
       this.loadedAppData = true;
     }
   }
@@ -26,6 +36,7 @@ export class AppController extends DurableObject<Env> {
   }
   private async persistAppData(): Promise<void> {
     await this.ctx.storage.put('appData', this.appData);
+    await this.ctx.storage.put('auditLogs', this.auditLogs);
   }
   async getState(userId: string): Promise<Record<string, any>> {
     await this.ensureLoaded();
@@ -33,8 +44,32 @@ export class AppController extends DurableObject<Env> {
   }
   async setState(userId: string, data: Record<string, any>): Promise<void> {
     await this.ensureLoaded();
+    const before = JSON.stringify(this.appData[userId] || {});
     this.appData[userId] = { ...(this.appData[userId] || {}), ...data };
+    const after = JSON.stringify(this.appData[userId]);
+    // Auto-audit for POPIA
+    await this.addAuditLog({
+      id: crypto.randomUUID(),
+      userId,
+      timestamp: Date.now(),
+      action: 'UPDATE_STATE',
+      entity: 'USER_APP_DATA',
+      before,
+      after
+    });
     await this.persistAppData();
+  }
+  async addAuditLog(log: AuditEntry): Promise<void> {
+    await this.ensureLoaded();
+    this.auditLogs.unshift(log);
+    // Keep last 1000 logs
+    if (this.auditLogs.length > 1000) this.auditLogs.pop();
+    await this.persistAppData();
+  }
+  async getAuditLogs(userId?: string): Promise<AuditEntry[]> {
+    await this.ensureLoaded();
+    if (!userId) return this.auditLogs;
+    return this.auditLogs.filter(l => l.userId === userId);
   }
   async addSession(sessionId: string, title?: string): Promise<void> {
     await this.ensureLoaded();
@@ -61,27 +96,9 @@ export class AppController extends DurableObject<Env> {
       await this.persist();
     }
   }
-  async updateSessionTitle(sessionId: string, title: string): Promise<boolean> {
-    await this.ensureLoaded();
-    const session = this.sessions.get(sessionId);
-    if (session) {
-      session.title = title;
-      await this.persist();
-      return true;
-    }
-    return false;
-  }
   async listSessions(): Promise<SessionInfo[]> {
     await this.ensureLoaded();
     return Array.from(this.sessions.values()).sort((a, b) => b.lastActive - a.lastActive);
-  }
-  async getSessionCount(): Promise<number> {
-    await this.ensureLoaded();
-    return this.sessions.size;
-  }
-  async getSession(sessionId: string): Promise<SessionInfo | null> {
-    await this.ensureLoaded();
-    return this.sessions.get(sessionId) || null;
   }
   async clearAllSessions(): Promise<number> {
     await this.ensureLoaded();
