@@ -104,7 +104,8 @@ function runSetupCommands() {
     "bun add date-fns@^4.1.0",
     "bun add react-i18next@^12.3.1",
     "bun add workbox-window@^7.1.1",
-    "bun add three@^0.165.0"
+    "bun add three@^0.165.0",
+    "bun add zod @tanstack/react-query"
 ];
     
     if (commands.length === 0) {
